@@ -51,4 +51,4 @@ node build-prh.mjs --check   # いまの file と同じかだけ見る
 - `build-prh.mjs` — `words.md` から辞書を作る。
 - `bin/cli.mjs` — 内包の設定で textlint を回す CLI。
 
-規則そのもの（textlint 本体・prh・ja-technical-writing）は npm の依存です。ここには複製していません。由来は `NOTICE` にあります。
+規則そのもの（textlint 本体・prh・ja-technical-writing）は npm の依存です。ここには複製していません。
