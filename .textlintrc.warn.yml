@@ -1,0 +1,11 @@
+# 気をつける語。**止めない。警告を出すだけ。**
+#
+# 正しい使い方と誤った使い方が両方ある語なので、一律には禁じられない。
+# 対象は `docs` と `README.md` の全部。
+filters:
+  comments: true
+rules:
+  prh:
+    severity: warning
+    rulePaths:
+      - ./prh-warn.yml

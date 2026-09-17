@@ -1,0 +1,152 @@
+# 用語辞書。textlint-rule-prh が読む。
+#
+# **手で直さない。** `words.md` の表から `build-prh.mjs` が作る。
+# 語を足すときは、あちらの表に 1 行足す。
+version: 1
+rules:
+
+  # ===== 気をつける語 (止めない。正しい使い方もある) =====
+  # そのまま使ってよい意味: 物が下へ動く / 紛れる意味: 該当しない / 失敗する / 下がる / 減る
+  - expected: 落ち (該当しない / 失敗する / 下がる / 減る の意味なら直す)
+    pattern: 落ち
+    severity: warning
+  # そのまま使ってよい意味: 物を下へ動かす / 紛れる意味: 除外する / 失敗させる / 下げる
+  - expected: 落と (除外する / 失敗させる / 下げる の意味なら直す)
+    pattern: 落と
+    severity: warning
+  # そのまま使ってよい意味: 物がぶつかる / 紛れる意味: 該当する / 妥当だ / 推測が合う
+  - expected: 当た (該当する / 妥当だ / 推測が合う の意味なら直す)
+    pattern: 当た
+    severity: warning
+  # そのまま使ってよい意味: 物をぶつける (「割り当てる」は可) / 紛れる意味: 推測する / 該当させる
+  - expected: 当て (推測する / 該当させる の意味なら直す)
+    pattern: 当て
+    severity: warning
+  # そのまま使ってよい意味: 薬や力が作用する / 紛れる意味: 重要だ / 有効だ
+  - expected: 効く (重要だ / 有効だ の意味なら直す)
+    pattern: 効く
+    severity: warning
+  # そのまま使ってよい意味: 物が刺さる / 紛れる意味: 説得力がある
+  - expected: 刺さ (説得力がある の意味なら直す)
+    pattern: 刺さ
+    severity: warning
+  # そのまま使ってよい意味: 物を詰める / 紛れる意味: 精査する / 仕上げる
+  - expected: 詰め (精査する / 仕上げる の意味なら直す)
+    pattern: 詰め
+    severity: warning
+  # そのまま使ってよい意味: 刃物で切る / 紛れる意味: 終える / 区切る / 下回る
+  - expected: 切る (終える / 区切る / 下回る の意味なら直す)
+    pattern: 切る
+    severity: warning
+  # そのまま使ってよい意味: 物を打つ / 紛れる意味: 実行する / 送る
+  - expected: 打つ (実行する / 送る の意味なら直す)
+    pattern: 打つ
+    severity: warning
+  # そのまま使ってよい意味: 物を回す / 紛れる意味: 実行する / 順に渡す
+  - expected: 回す (実行する / 順に渡す の意味なら直す)
+    pattern: 回す
+    severity: warning
+  # そのまま使ってよい意味: 物を通す / 紛れる意味: 検査に合格する / 適用する
+  - expected: 通す (検査に合格する / 適用する の意味なら直す)
+    pattern: 通す
+    severity: warning
+  # そのまま使ってよい意味: 引き抜く / 紛れる意味: 除外する / 取得する
+  - expected: 抜く (除外する / 取得する の意味なら直す)
+    pattern: 抜く
+    severity: warning
+  # そのまま使ってよい意味: 液体を流す / 紛れる意味: 実行する / 送信する
+  - expected: 流す (実行する / 送信する の意味なら直す)
+    pattern: 流す
+    severity: warning
+  # そのまま使ってよい意味: 物が掛かる / 紛れる意味: 時間を要する / 条件が付く
+  - expected: 掛か (時間を要する / 条件が付く の意味なら直す)
+    pattern: 掛か
+    severity: warning
+  # そのまま使ってよい意味: 物を掛ける / 紛れる意味: 条件を付ける
+  - expected: 掛け (条件を付ける の意味なら直す)
+    pattern: 掛け
+    severity: warning
+  # そのまま使ってよい意味: 手に取る / 紛れる意味: 取得する / 記録する
+  - expected: 取る (取得する / 記録する の意味なら直す)
+    pattern: 取る
+    severity: warning
+  # そのまま使ってよい意味: 物を叩く / 紛れる意味: 要求を送る (HTTP) / 呼ぶ (関数) / 問い合わせを送る (DB) / 直に指定する (URL の値)
+  - expected: 叩 (要求を送る (HTTP) / 呼ぶ (関数) / 問い合わせを送る (DB) / 直に指定する (URL の値) の意味なら直す)
+    pattern: 叩
+    severity: warning
+  # そのまま使ってよい意味: 生物が生きる / 紛れる意味: 有効である
+  - expected: 生き (有効である の意味なら直す)
+    pattern: 生き
+    severity: warning
+  # そのまま使ってよい意味: 片付け / 紛れる意味: 検証 / 整理
+  - expected: 掃除 (検証 / 整理 の意味なら直す)
+    pattern: 掃除
+    severity: warning
+  # そのまま使ってよい意味: 字の並べ方 / 紛れる意味: 値 / 名前
+  - expected: 綴り (値 / 名前 の意味なら直す)
+    pattern: 綴り
+    severity: warning
+  # そのまま使ってよい意味: 建物の基礎 / 紛れる意味: 前提データ
+  - expected: 土台 (前提データ の意味なら直す)
+    pattern: 土台
+    severity: warning
+  # そのまま使ってよい意味: 物を挿し込む / 紛れる意味: プレースホルダ
+  - expected: 差し込 (プレースホルダ の意味なら直す)
+    pattern: 差し込
+    severity: warning
+  # そのまま使ってよい意味: しまう / 紛れる意味: コミットする
+  - expected: 収め (コミットする の意味なら直す)
+    pattern: 収め
+    severity: warning
+  # そのまま使ってよい意味: 順に回す / 紛れる意味: 引き継ぐ / 渡す
+  - expected: 持ち回 (引き継ぐ / 渡す の意味なら直す)
+    pattern: 持ち回
+    severity: warning
+  # そのまま使ってよい意味: 城の中心 / 紛れる意味: 中心的な問題
+  - expected: 本丸 (中心的な問題 の意味なら直す)
+    pattern: 本丸
+    severity: warning
+  # そのまま使ってよい意味: 一回の打撃 / 紛れる意味: 決定的な反論
+  - expected: 一撃 (決定的な反論 の意味なら直す)
+    pattern: 一撃
+    severity: warning
+  # そのまま使ってよい意味: 音楽の技法 / 紛れる意味: 共通する構造
+  - expected: 通奏低音 (共通する構造 の意味なら直す)
+    pattern: 通奏低音
+    severity: warning
+  # そのまま使ってよい意味: 兵器 / 紛れる意味: 失敗しやすい点
+  - expected: 地雷 (失敗しやすい点 の意味なら直す)
+    pattern: 地雷
+    severity: warning
+  # そのまま使ってよい意味: 筋肉・筋道 / 紛れる意味: 適切でない
+  - expected: 筋が (適切でない の意味なら直す)
+    pattern: 筋が
+    severity: warning
+  # そのまま使ってよい意味: （無い語） / 紛れる意味: 納得できる
+  - expected: 腹落ち (納得できる の意味なら直す)
+    pattern: 腹落ち
+    severity: warning
+  # そのまま使ってよい意味: 物を据える / 紛れる意味: 起点にする
+  - expected: 据え (起点にする の意味なら直す)
+    pattern: 据え
+    severity: warning
+  # そのまま使ってよい意味: 物が据わる / 紛れる意味: 不自然だ
+  - expected: 据わ (不自然だ の意味なら直す)
+    pattern: 据わ
+    severity: warning
+  # そのまま使ってよい意味: 会計 / 紛れる意味: 考慮する
+  - expected: 勘定 (考慮する の意味なら直す)
+    pattern: 勘定
+    severity: warning
+  # そのまま使ってよい意味: 弾の届く距離 / 紛れる意味: 適用範囲
+  - expected: 射程 (適用範囲 の意味なら直す)
+    pattern: 射程
+    severity: warning
+  # そのまま使ってよい意味: 車が走ること / 紛れる意味: 試験を流すこと
+  - expected: 走行 (試験を流すこと の意味なら直す)
+    pattern: 走行
+    severity: warning
+  # そのまま使ってよい意味: 人の腕前 / 紛れる意味: スキル (Claude Code の)
+  - expected: 技能 (スキル (Claude Code の) の意味なら直す)
+    pattern: 技能
+    severity: warning

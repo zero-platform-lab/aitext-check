@@ -1,0 +1,152 @@
+# 用語辞書。textlint-rule-prh が読む。
+#
+# **手で直さない。** `words.md` の表から `build-prh.mjs` が作る。
+# 語を足すときは、あちらの表に 1 行足す。
+version: 1
+rules:
+
+  # ===== 使わない語 (見つけたら直す) =====
+  # `container` の訳語。日本語では通じない
+  - expected: コンテナ
+    pattern: 容器
+  # `smoke test` の直訳
+  - expected: 経路の確認
+    pattern: 煙試験
+  # `walkthrough` の直訳
+  - expected: 画面の確認
+    pattern: 歩き回り
+  # `forge` は日本では通じない
+  - expected: Git ホスティング
+    pattern: フォージ
+  # 番をすること。機能の名前なら**ウォッチ**、検査が調べることなら**確かめる**
+  - expected: ウォッチ / 確かめる
+    pattern: 見張
+  # 塗料や布の見本を綴じたもの。部品を実物の CSS で描いて並べたページは**カタログ**。道具の名前も `build_catalog.py` に揃えた
+  - expected: カタログ
+    pattern: 見本帳
+  # DB の形を変えるほうは「マイグレーション」
+  - expected: マイグレーション
+    pattern: /移行(を適用|を当て|の適用|を流|ファイル)/
+  # 同上
+  - expected: マイグレーション
+    pattern: /(適用済み|未適用|節目)の移行/
+  # `配る` はブラウザへ送る意味で使っている
+  - expected: リリース済みの
+    pattern: /配った(移行|マイグレーション|版)/
+  # 味方かを確かめる符号。パスワードでもトークンでもない
+  - expected: パスワード / トークン
+    pattern: 合言葉
+  # 仲間内の隠語
+  - expected: 認可コード
+    pattern: 符丁
+  # 知らせるしるし。トークンではない
+  - expected: トークン
+    pattern: /(知らない|そんな|使い切った)合図/
+  # Unix のシグナルは「シグナル」
+  - expected: 停止シグナル
+    pattern: 停止の合図
+  # 出入りする穴。HTTP の話ではない
+  - expected: エンドポイント
+    pattern: /(生死|監視|運用|利用者)の口/
+  # 同上
+  - expected: 受け側
+    pattern: 受け口
+  # しるし全般。接頭辞を指さない
+  - expected: 試験の接頭辞
+    pattern: 試験の印
+  # 字の並べ方。識別子の文字列ではない
+  - expected: 値
+    pattern: /(知らない|読めない|間違えた)綴り/
+  # 建物の基礎
+  - expected: ベースイメージ / 前提のデータ
+    pattern: 土台
+  # 順に回すこと
+  - expected: 持ち越す / 引き渡す
+    pattern: 持ち回
+  # 字の形 (glyph) のこと。書体の話でだけ使う
+  - expected: アイコン
+    pattern: 字形
+  # 古風。`button` の訳語としては通らない
+  - expected: ボタン
+    pattern: 釦
+  # 名札・付箋のこと。`badge` を指さない
+  - expected: バッジ
+    pattern: /(番号の|小さな|状態の)?札/
+  # 体の脇のこと。`aside` の訳語としては通らない
+  - expected: サイドバー / 横
+    pattern: 脇
+  # `flash` / `notification` は「通知」
+  - expected: 通知
+    pattern: /知らせ(?!る)/
+  # 比較の意味。比率を指さない
+  - expected: コントラスト比
+    pattern: /(?<!相)対比/
+  # 塗りの下ごしらえ。`background` ではない
+  - expected: 背景
+    pattern: 下地
+  # 取るに足らないもの、の含み
+  - expected: 補助要素
+    pattern: 添え物
+  # 計器の刻み。間隔の刻みは「スケール」
+  - expected: スケール
+    pattern: 目盛り
+  # 的は標的。`target size` は「タップ領域」
+  - expected: タップ領域
+    pattern: 押す的
+  # 古風
+  - expected: ページ
+    pattern: 頁
+  # 漫画の吹き出し
+  - expected: ツールチップ
+    pattern: 吹き出し
+  # `toolbar`
+  - expected: ツールバー
+    pattern: 操作の並び
+  # `progress bar`
+  - expected: プログレスバー
+    pattern: 進捗の帯
+  # `visually hidden`
+  - expected: 視覚的に隠す
+    pattern: 目から隠す
+  # 目的地のこと。`nav` を指さない
+  - expected: ナビゲーション / リンク先
+    pattern: 行き先
+  # 名前を書いた札。DKIM の `selector` ではない
+  - expected: セレクター
+    pattern: 名札
+  # 鍵をかけて戸締まりすること。アカウントの `lock` ではない
+  - expected: ロック
+    pattern: 施錠
+  # 予備の写し。`backup` を指さない。**「控えめ」だけ除く。** 文字を並べて後ろを絞る形にしていたら、`た` と `る` が抜けていて「控えた」「控える」に当たらず、バックアップ機能の 76 件を丸ごと見落とした
+  - expected: バックアップ
+    pattern: /控え(?!め)/
+  # 捕まえずに放すこと。`escape` を指さない
+  - expected: エスケープ
+    pattern: 逃が
+  # 物を置く場所。`storage path` を指さない。**「置き場所」だけ除く。** 除かずに置換して `保存先所` を 31 か所作った
+  - expected: 保存先
+    pattern: /置き場(?!所)/
+  # 繋ぐやり方。表と表の `relation` を指さない
+  - expected: リレーション
+    pattern: 繋ぎ方
+  # 容器。`container` を指さない
+  - expected: コンテナ
+    pattern: 入れ物
+  # 食器・容れ物。要求ごとの保持領域を指さない（「解析器」は辞書にある語なので除く）
+  - expected: コンテキスト
+    pattern: /(?<![機容成査計析])器/
+  # （無い語）
+  - expected: エディタ
+    pattern: 編集器
+  # あだ名・通称。画面に出る `label` ではない
+  - expected: 表示名
+    pattern: 呼び名
+  # 型紙。同じものを 2 つの語で呼ばない
+  - expected: テンプレート
+    pattern: 雛形
+  # 物事の進み具合の区切り。チケットの `status` ではない（「2 段階」はフェーズなので可）
+  - expected: ステータス
+    pattern: /(?<![0-9０-９])(?<![0-9０-９] )段階(?![0-9０-９])/
+  # **全体の決めごととして書かない。** `NFR-USA-02a` は画面側の処理を使ってよいと定めている。この一文があったせいで、右クリックの品書きとガントのドラッグを落とした。「ここは `details` で足りる」のような**その場の説明は書いてよい**
+  - expected: （書かない）
+    pattern: /できることに(?:画面側の)?処理を書かない/

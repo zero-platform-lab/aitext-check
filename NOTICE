@@ -1,0 +1,12 @@
+aitext-check
+Copyright 2026 zero-platform-lab
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+由来と第三者の成果物について:
+
+- 設定・辞書・実行スクリプトは、michibiki（MIT No Attribution）の textlint 一式を
+  出発点にしています。MIT-0 は条件を課しませんが、由来として記します。
+- 語彙の検査は textlint-rule-prh、書き方の検査は
+  textlint-rule-preset-ja-technical-writing を使います。どちらも npm の依存として
+  取り込むもので、各パッケージの license に従います。ここには複製していません。

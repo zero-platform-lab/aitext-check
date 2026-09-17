@@ -1,0 +1,25 @@
+{
+	"name": "aitext-check",
+	"version": "0.1.0",
+	"description": "AI が書いた日本語の文章を規則ベースで校正する textlint 一式（語彙は prh 辞書、書き方は ja-technical-writing）。",
+	"type": "module",
+	"bin": {
+		"aitext-check": "bin/cli.mjs"
+	},
+	"scripts": {
+		"build-prh": "node build-prh.mjs",
+		"check-prh": "node build-prh.mjs --check",
+		"selftest": "node bin/cli.mjs README.md && node bin/cli.mjs --prose README.md"
+	},
+	"dependencies": {
+		"textlint": "^15.8.0",
+		"textlint-filter-rule-comments": "^1.3.0",
+		"textlint-rule-preset-ja-technical-writing": "^12.0.2",
+		"textlint-rule-prh": "^6.1.0"
+	},
+	"license": "Apache-2.0",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/zero-platform-lab/aitext-check.git"
+	}
+}
