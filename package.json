@@ -9,7 +9,7 @@
 	"scripts": {
 		"build-prh": "node build-prh.mjs",
 		"check-prh": "node build-prh.mjs --check",
-		"selftest": "node bin/cli.mjs README.md && node bin/cli.mjs --prose README.md"
+		"selftest": "node bin/cli.mjs README.md bin build-prh.mjs && node bin/cli.mjs --prose README.md"
 	},
 	"dependencies": {
 		"textlint": "^15.8.0",
@@ -17,7 +17,7 @@
 		"textlint-rule-preset-ja-technical-writing": "^12.0.2",
 		"textlint-rule-prh": "^6.1.0"
 	},
-	"license": "Apache-2.0",
+	"license": "MIT-0",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/zero-platform-lab/aitext-check.git"
