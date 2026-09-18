@@ -2,7 +2,7 @@
 // aitext-check — 日本語の文章を規則ベースで校正する CLI。内包の設定で textlint を回す。
 //
 //   aitext-check [paths...]          語彙（prh 辞書）。既定の対象は docs と README.md
-//   aitext-check --prose [paths...]  書き方（ja-technical-writing）。文書だけに当てる
+//   aitext-check --prose [paths...]  書き方（ja-technical-writing）。文書だけに適用する
 //   aitext-check --warn [paths...]   気をつける語（止めない・warning）
 //   printf '%s' "$文" | aitext-check --prose -   標準入力を流し込む
 //
