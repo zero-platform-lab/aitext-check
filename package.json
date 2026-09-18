@@ -9,7 +9,7 @@
 	"scripts": {
 		"build-prh": "node build-prh.mjs",
 		"check-prh": "node build-prh.mjs --check",
-		"selftest": "node bin/cli.mjs README.md bin build-prh.mjs && node bin/cli.mjs --prose README.md"
+		"selftest": "node bin/cli.mjs README.md && node bin/cli.mjs --prose README.md"
 	},
 	"dependencies": {
 		"textlint": "^15.8.0",

@@ -24,7 +24,6 @@ plugins:
       - .sql
       - .html
       - .js
-      - .mjs
       - .css
       - .toml
       - .yml
