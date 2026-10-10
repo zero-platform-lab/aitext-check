@@ -1,7 +1,7 @@
 {
 	"name": "aitext-check",
 	"version": "0.1.0",
-	"description": "AI が書いた日本語の文章を規則ベースで校正する textlint 一式（語彙は prh 辞書、書き方は ja-technical-writing）。",
+	"description": "日本語の文章（主に技術文章）をルールベースで校正する textlint の設定一式（語彙は prh の辞書、書き方は ja-technical-writing）。",
 	"type": "module",
 	"bin": {
 		"aitext-check": "bin/cli.mjs"

@@ -1,15 +1,14 @@
 #!/usr/bin/env node
 // words.md の表から prh 辞書（prh-error.yml / prh-warn.yml）を作る。
 //
-// 語の一覧は words.md だけにする。手で 2 か所に書くと、片方だけが育つ。
-// 辞書を 2 つに分けるのは、重さ（error と warning）を分けるため。textlint の
-// severity は規則ごとにしか指定できず、prh の辞書の 1 件ずつには指定できない。
+// 語の一覧は words.md にだけ置く。2 か所に手で書くと、片方だけが更新されていく。
+// 辞書を 2 つに分けるのは、重大度（error と warning）を分けるため。textlint の
+// severity はルールごとにしか指定できず、prh の辞書の項目ごとには指定できない。
 //
 //   node build-prh.mjs           作り直す
-//   node build-prh.mjs --check   作り直さず、いまの file と同じかだけ見る
+//   node build-prh.mjs --check   作り直さずに、現在のファイルと一致するかだけを確かめる
 //
-// 「見る場所」が 全部 でない行は書き出さない。textlint が読むのは文書だけなので、
-// 画面にだけ出る語を辞書に入れると、文書の正しい使い方だけが error になる。
+// 「見る場所」が 全部 でない行は書き出さない。書く前に人が読むための行なので。
 import { readFileSync, writeFileSync, existsSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import path from "node:path"
@@ -37,7 +36,7 @@ function rows(heading) {
 	const out = []
 	for (const l of lines.slice(start, end)) {
 		if (!l.startsWith("|")) continue
-		// \| はセルの中の縦棒。一度 \x00 へ退避してから割り、戻すときに | へ直す。
+		// \| はセルの中の縦棒。分割する前に \x00 に置き換え、分割した後で | に戻す。
 		const safe = l.trim().replace(/^\|/, "").replace(/\|$/, "").replace(/\\\|/g, "\x00")
 		const cells = safe.split("|").map((c) => c.trim().replace(/\x00/g, "|"))
 		if (cells.length === 0) continue
@@ -54,7 +53,7 @@ function unquote(s) {
 	return s.trim().replace(/^`/, "").replace(/`$/, "").trim()
 }
 
-// 正規表現として書いてあるか。丸ごと文字として扱うと当たらない。
+// 正規表現として書いてあるか。正規表現をただの文字列として扱うと一致しない。
 function isRegex(pattern) {
 	return /[()\[\]|?*+\\^$]/.test(pattern)
 }
@@ -100,19 +99,19 @@ function buildBan() {
 	return out.join("\n") + "\n"
 }
 
-// 気をつける語。止めない（warning）。expected を pattern と同じにすると prh は
-// 何も言わないので、紛れる意味を expected に書いて警告の文言として読ませる。
+// 気をつける語。チェックを失敗扱いにしない（warning）。expected を pattern と同じにすると
+// prh は何も出さないので、紛れる意味を expected に書き、警告の文言として表示する。
 function buildCare() {
-	const out = head("気をつける語 (止めない。正しい使い方もある)")
+	const out = head("気をつける語（warning を出すだけ。正しい使い方もある）")
 	for (const cells of visibleAll("気をつける語")) {
 		const word = unquote(cells[0])
 		const ok = cells.length > 1 ? cells[1] : ""
 		const mixed = cells.length > 3 ? cells[3] : ""
 		const why = `そのまま使ってよい意味: ${ok} / 紛れる意味: ${mixed}`
-		// 正規表現の語は丸ごと括って、当たった文字 ($1) を警告に出す。`(?<!段)落と` を
-		// expected にそのまま書くと、警告の文言に正規表現が出る
+		// 正規表現の語は全体を括弧で囲み、一致した文字列（$1）を警告に表示する。`(?<!段)落と` を
+		// expected にそのまま書くと、警告の文言に正規表現が表示されてしまう
 		const regex = isRegex(word)
-		out.push(entry(regex ? `(${word})` : word, `${regex ? "$1" : word} (${mixed} の意味なら直す)`, why, "warning"))
+		out.push(entry(regex ? `(${word})` : word, `${regex ? "$1" : word}（${mixed} の意味で使っていないか確認）`, why, "warning"))
 	}
 	return out.join("\n") + "\n"
 }
