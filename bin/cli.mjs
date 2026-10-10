@@ -3,7 +3,7 @@
 //
 //   aitext-check [paths...]          語彙（prh 辞書）。既定の対象はリポジトリの .md すべて
 //   aitext-check --prose [paths...]  書き方（ja-technical-writing）。文書だけに適用する
-//   aitext-check --warn [paths...]   気をつける語（warning を出すだけで、失敗扱いにしない）
+//   aitext-check --warn [paths...]   気をつける語句（warning を出すだけで、失敗扱いにしない）
 //   printf '%s' "$文" | aitext-check --prose -   標準入力から読み込む
 //   aitext-check --llm <paths...>    ローカル LLM（Ollama）で読む（bin/llm.mjs、llm.md）
 //

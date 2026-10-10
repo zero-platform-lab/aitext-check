@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // words.md の表から prh 辞書（prh-error.yml / prh-warn.yml）を作る。
 //
-// 語の一覧は words.md にだけ置く。2 か所に手で書くと、片方だけが更新されていく。
+// 語句の一覧は words.md にだけ置く。2 か所に手で書くと、片方だけが更新されていく。
 // 辞書を 2 つに分けるのは、重大度（error と warning）を分けるため。textlint の
 // severity はルールごとにしか指定できず、prh の辞書の項目ごとには指定できない。
 //
@@ -42,7 +42,7 @@ function rows(heading) {
 		if (cells.length === 0) continue
 		const joined = cells.join("")
 		if ([...joined].every((ch) => "-: ".includes(ch))) continue // 区切りの行
-		if (cells[0] === "書いてはいけない" || cells[0] === "語") continue // 見出しの行
+		if (cells[0] === "書いてはいけない" || cells[0] === "語句") continue // 見出しの行
 		out.push(cells)
 	}
 	return out
@@ -74,7 +74,7 @@ function head(title) {
 		"# 用語辞書。textlint-rule-prh が読む。",
 		"#",
 		"# **手で直さない。** `words.md` の表から `build-prh.mjs` が作る。",
-		"# 語を足すときは、あちらの表に 1 行足す。",
+		"# 語句を足すときは、あちらの表に 1 行足す。",
 		"version: 1",
 		"rules:",
 		"",
@@ -87,10 +87,10 @@ function visibleAll(table) {
 	return rows(table).filter((c) => c.length < 3 || c[2] === "全部")
 }
 
-// 使わない語。見つけたら直す（error）。
+// 修正すべき語句。見つけたら直す（error）。
 function buildBan() {
-	const out = head("使わない語 (見つけたら直す)")
-	for (const cells of visibleAll("使わない語")) {
+	const out = head("修正すべき語句 (見つけたら直す)")
+	for (const cells of visibleAll("修正すべき語句")) {
 		const bad = unquote(cells[0])
 		const good = unquote(cells[1])
 		const why = cells.length > 3 ? cells[3] : ""
@@ -99,19 +99,19 @@ function buildBan() {
 	return out.join("\n") + "\n"
 }
 
-// 気をつける語。チェックを失敗扱いにしない（warning）。expected を pattern と同じにすると
+// 気をつける語句。チェックを失敗扱いにしない（warning）。expected を pattern と同じにすると
 // prh は何も出さないので、紛れる意味を expected に書き、警告の文言として表示する。
 function buildCare() {
-	const out = head("気をつける語（warning を出すだけ。正しい使い方もある）")
-	for (const cells of visibleAll("気をつける語")) {
+	const out = head("気をつける語句（warning を出すだけ。正しい使い方もある）")
+	for (const cells of visibleAll("気をつける語句")) {
 		const word = unquote(cells[0])
 		const ok = cells.length > 1 ? cells[1] : ""
 		const mixed = cells.length > 3 ? cells[3] : ""
 		const why = `そのまま使ってよい意味: ${ok} / 紛れる意味: ${mixed}`
-		// 正規表現の語は全体を括弧で囲み、一致した文字列（$1）を警告に表示する。`(?<!段)落と` を
+		// 正規表現の語句は全体を括弧で囲み、一致した文字列（$1）を警告に表示する。`(?<!段)落と` を
 		// expected にそのまま書くと、警告の文言に正規表現が表示されてしまう
 		const regex = isRegex(word)
-		// 「紛れる意味」が「書き方:」で始まる行は、語の意味ではなく書き方の癖を指摘する。
+		// 「紛れる意味」が「書き方:」で始まる行は、語句の意味ではなく書き方の癖を指摘する。
 		// 後ろの文をそのまま警告に出す
 		const style = /^書き方[:：]\s*/.exec(mixed)
 		const note = style ? mixed.slice(style[0].length) : `${mixed} の意味で使っていないか確認`
@@ -138,7 +138,7 @@ if (process.argv.includes("--check")) {
 }
 
 for (const [p, text] of made) writeFileSync(p, text, "utf8")
-const ban = visibleAll("使わない語").length
-const care = visibleAll("気をつける語").length
-const skip = rows("使わない語").length + rows("気をつける語").length - ban - care
+const ban = visibleAll("修正すべき語句").length
+const care = visibleAll("気をつける語句").length
+const skip = rows("修正すべき語句").length + rows("気をつける語句").length - ban - care
 console.log(`prh-error.yml (${ban} 件) と prh-warn.yml (${care} 件) を作った（見る場所が 全部 でない ${skip} 件は書き出していない）`)
