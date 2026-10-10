@@ -42,6 +42,38 @@ rules:
   - expected: 写し (複製 / コピー の意味なら直す)
     pattern: 写し
     severity: warning
+  # そのまま使ってよい意味: 法令や組織の決まり / 紛れる意味: textlint などのルール
+  - expected: 規則 (textlint などのルール の意味なら直す)
+    pattern: 規則
+    severity: warning
+  # そのまま使ってよい意味: 部品から作る / 紛れる意味: ビルド
+  - expected: 組み立て (ビルド の意味なら直す)
+    pattern: 組み立て
+    severity: warning
+  # そのまま使ってよい意味: 入学試験・資格試験など / 紛れる意味: テスト
+  - expected: 試験 (テスト の意味なら直す)
+    pattern: 試験
+    severity: warning
+  # そのまま使ってよい意味: （紙や画面の）表 / 紛れる意味: テーブル
+  - expected: $1 (テーブル の意味なら直す)
+    pattern: /((?:DB|データベース) ?の表)/
+    severity: warning
+  # そのまま使ってよい意味: 物を作ること（見出しだけの「作り」に当たる） / 紛れる意味: 構成
+  - expected: $1 (構成 の意味なら直す)
+    pattern: /(^作り$)/
+    severity: warning
+  # そのまま使ってよい意味: （無い語） / 紛れる意味: 編集画面 / 入力欄
+  - expected: $1 (編集画面 / 入力欄 の意味なら直す)
+    pattern: /(書く(?:画面|欄))/
+    severity: warning
+  # そのまま使ってよい意味: （無い語） / 紛れる意味: バージョン
+  - expected: 版の印 (バージョン の意味なら直す)
+    pattern: 版の印
+    severity: warning
+  # そのまま使ってよい意味: 処理を途中で止める / 紛れる意味: 失敗扱いにする
+  - expected: $1 (失敗扱いにする の意味なら直す)
+    pattern: /((?:チェック|検査)を止め)/
+    severity: warning
   # そのまま使ってよい意味: 物がぶつかる / 紛れる意味: 該当する / 妥当だ / 推測が合う
   - expected: 当た (該当する / 妥当だ / 推測が合う の意味なら直す)
     pattern: 当た
