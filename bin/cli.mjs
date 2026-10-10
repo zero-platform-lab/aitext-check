@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-// aitext-check — 日本語の文章を規則ベースで校正する CLI。内包の設定で textlint を回す。
+// aitext-check: 日本語の文章をルールベースで校正する CLI。同梱の設定で textlint を実行する。
 //
 //   aitext-check [paths...]          語彙（prh 辞書）。既定の対象はリポジトリの .md すべて
 //   aitext-check --prose [paths...]  書き方（ja-technical-writing）。文書だけに適用する
-//   aitext-check --warn [paths...]   気をつける語（止めない・warning）
-//   printf '%s' "$文" | aitext-check --prose -   標準入力を流し込む
+//   aitext-check --warn [paths...]   気をつける語（warning を出すだけで、失敗扱いにしない）
+//   printf '%s' "$文" | aitext-check --prose -   標準入力から読み込む
 //
 // textlint は利用側のディレクトリ（呼び出し元のカレントディレクトリ）で起動する。
 // 対象のパスと .textlintignore は、利用側を基準に解釈されるようにするため。
