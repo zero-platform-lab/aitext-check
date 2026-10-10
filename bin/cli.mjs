@@ -5,6 +5,7 @@
 //   aitext-check --prose [paths...]  書き方（ja-technical-writing）。文書だけに適用する
 //   aitext-check --warn [paths...]   気をつける語（warning を出すだけで、失敗扱いにしない）
 //   printf '%s' "$文" | aitext-check --prose -   標準入力から読み込む
+//   aitext-check --llm <paths...>    ローカル LLM（Ollama）で読む（bin/llm.mjs、llm.md）
 //
 // textlint は利用側のディレクトリ（呼び出し元のカレントディレクトリ）で起動する。
 // 対象のパスと .textlintignore は、利用側を基準に解釈されるようにするため。
@@ -15,6 +16,9 @@ import { createRequire } from "node:module"
 import { existsSync, readdirSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import path from "node:path"
+
+// ローカル LLM で読むモードは、別のスクリプトに任せる（終わると、そちらで終了する）
+if (process.argv[2] === "--llm") await import("./llm.mjs")
 
 const require = createRequire(import.meta.url)
 // ルールのパッケージが入っている node_modules。npm が利用側の node_modules にまとめて

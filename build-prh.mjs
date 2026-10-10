@@ -111,7 +111,11 @@ function buildCare() {
 		// 正規表現の語は全体を括弧で囲み、一致した文字列（$1）を警告に表示する。`(?<!段)落と` を
 		// expected にそのまま書くと、警告の文言に正規表現が表示されてしまう
 		const regex = isRegex(word)
-		out.push(entry(regex ? `(${word})` : word, `${regex ? "$1" : word}（${mixed} の意味で使っていないか確認）`, why, "warning"))
+		// 「紛れる意味」が「書き方:」で始まる行は、語の意味ではなく書き方の癖を指摘する。
+		// 後ろの文をそのまま警告に出す
+		const style = /^書き方[:：]\s*/.exec(mixed)
+		const note = style ? mixed.slice(style[0].length) : `${mixed} の意味で使っていないか確認`
+		out.push(entry(regex ? `(${word})` : word, `${regex ? "$1" : word}（${note}）`, why, "warning"))
 	}
 	return out.join("\n") + "\n"
 }
