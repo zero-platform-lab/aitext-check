@@ -70,14 +70,16 @@ for (const f of files) {
 	const doc = readFileSync(path.resolve(f), "utf8")
 	process.stderr.write(`${f}: ${opt.model} に送りました（${opt.think ? "数分から 20 分" : "数分"}ほどかかります）\n`)
 	const started = Date.now()
-	let res
+	// 少しずつ返してもらう（stream）。全部書き終わるまで何も返さない形にすると、Node.js の fetch は
+	// ヘッダーを 5 分待ったところで接続を切る（UND_ERR_HEADERS_TIMEOUT）
+	let out = ""
 	try {
 		const r = await fetch(`${opt.url}/api/chat`, {
 			method: "POST",
 			headers: { "content-type": "application/json" },
 			body: JSON.stringify({
 				model: opt.model,
-				stream: false,
+				stream: true,
 				think: opt.think,
 				options: { temperature: 0.2, num_ctx: 32768 },
 				messages: [
@@ -87,15 +89,33 @@ for (const f of files) {
 			}),
 			signal: AbortSignal.timeout(60 * 60 * 1000),
 		})
-		res = await r.json()
-		if (!r.ok || res.error) throw new Error(res.error || `HTTP ${r.status}`)
+		if (!r.ok) throw new Error(`HTTP ${r.status} ${await r.text()}`)
+		let buf = "", phase = ""
+		const decoder = new TextDecoder()
+		for await (const chunk of r.body) {
+			buf += decoder.decode(chunk, { stream: true })
+			let nl
+			while ((nl = buf.indexOf("\n")) >= 0) {
+				const line = buf.slice(0, nl).trim()
+				buf = buf.slice(nl + 1)
+				if (!line) continue
+				const part = JSON.parse(line)
+				if (part.error) throw new Error(part.error)
+				const now = part.message?.thinking ? "考えています" : part.message?.content ? "書いています" : phase
+				if (now !== phase) {
+					phase = now
+					process.stderr.write(`${f}: ${phase}（${Math.round((Date.now() - started) / 1000)} 秒）\n`)
+				}
+				out += part.message?.content || ""
+			}
+		}
 	} catch (e) {
-		console.error(`${f}: Ollama（${opt.url}）から結果を受け取れませんでした: ${e.message}`)
+		console.error(`${f}: Ollama（${opt.url}）から結果を受け取れませんでした: ${e.cause?.code || e.message}`)
 		failed = true
 		continue
 	}
 	const seconds = Math.round((Date.now() - started) / 1000)
-	const out = (res.message?.content || "").trim()
+	out = out.trim()
 	const lines = [`## ${f}（${seconds} 秒）`, ""]
 	for (const l of out.split("\n")) {
 		lines.push(l)
