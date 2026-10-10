@@ -4,7 +4,7 @@ AI が書いた日本語の文章を、規則ベースで校正する textlint �
 
 ## 何を見るか
 
-- **語彙**: prh の辞書（`prh-error.yml`）で、避けたい語を推奨語へ。既定の対象は `docs` と `README.md`。
+- **語彙**: prh の辞書（`prh-error.yml`）で、避けたい語を推奨語へ。既定の対象はリポジトリの `.md` すべて。
 - **書き方**: `ja-technical-writing` の規則（文の長さ・句点など）。文書だけに適用する。
 - **気をつける語**: 正しい使い方もある語（`prh-warn.yml`）。止めずに warning を出す。
 
@@ -20,19 +20,23 @@ AI が書いた日本語の文章を、規則ベースで校正する textlint �
   "aitext-check": "github:zero-platform-lab/aitext-check"
 },
 "scripts": {
-  "lint:ja": "aitext-check docs README.md",
-  "lint:ja:prose": "aitext-check --prose docs"
+  "lint:ja": "aitext-check",
+  "lint:ja:prose": "aitext-check --prose",
+  "lint:ja:warn": "aitext-check --warn"
 }
 ```
 
 ```sh
-aitext-check docs README.md          # 語彙
-aitext-check --prose docs            # 書き方
-aitext-check --warn docs README.md   # 気をつける語
+aitext-check                         # 語彙（リポジトリの .md すべて）
+aitext-check docs README.md          # 語彙（対象を指定する）
+aitext-check --prose                 # 書き方
+aitext-check --warn                  # 気をつける語
 printf '%s' "$文" | aitext-check --prose -   # 標準入力を流し込む
 ```
 
-対象を省くと `docs` と `README.md` を見ます。書き方の対象から外す file は、利用側 repo の `.textlintignore.prose` に並べます。
+対象を省くと、リポジトリの `.md` ファイルすべてを見ます。git のリポジトリの中では git が管理しているファイルだけ（`.gitignore` で外したものは見ない）、そうでなければカレントディレクトリより下のファイル（`node_modules` と `.` で始まるディレクトリは除く）です。
+
+対象から外すファイルは、利用側のリポジトリの `.textlintignore` に書きます。書き方のチェックだけから外すファイルは `.textlintignore.prose` に書きます。
 
 ## 辞書に語を足す
 
