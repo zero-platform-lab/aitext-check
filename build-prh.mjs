@@ -111,7 +111,7 @@ function buildCare() {
 		// 正規表現の語は全体を括弧で囲み、一致した文字列（$1）を警告に表示する。`(?<!段)落と` を
 		// expected にそのまま書くと、警告の文言に正規表現が表示されてしまう
 		const regex = isRegex(word)
-		out.push(entry(regex ? `(${word})` : word, `${regex ? "$1" : word} (${mixed} の意味なら直す)`, why, "warning"))
+		out.push(entry(regex ? `(${word})` : word, `${regex ? "$1" : word}（${mixed} の意味で使っていないか確認）`, why, "warning"))
 	}
 	return out.join("\n") + "\n"
 }
