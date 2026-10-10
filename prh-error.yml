@@ -96,42 +96,30 @@ rules:
   # 漫画の吹き出し
   - expected: ツールチップ
     pattern: 吹き出し
-  # `toolbar`
-  - expected: ツールバー
-    pattern: 操作の並び
   # `progress bar`
   - expected: プログレスバー
     pattern: 進捗の帯
   # `visually hidden`
   - expected: 視覚的に隠す
     pattern: 目から隠す
-  # 目的地のこと。`nav` を指さない
-  - expected: ナビゲーション / リンク先
-    pattern: 行き先
   # 名前を書いた札。DKIM の `selector` ではない
   - expected: セレクター
     pattern: 名札
   # 鍵をかけて戸締まりすること。アカウントの `lock` ではない
   - expected: ロック
     pattern: 施錠
-  # 予備の写し。`backup` を指さない。**「控えめ」だけ除く。** 文字を並べて後ろを絞る形にしていたら、`た` と `る` が抜けていて「控えた」「控える」に当たらず、バックアップ機能の 76 件を丸ごと見落とした
-  - expected: バックアップ
-    pattern: /控え(?!め)/
   # 捕まえずに放すこと。`escape` を指さない
   - expected: エスケープ
     pattern: 逃が
-  # 物を置く場所。`storage path` を指さない。**「置き場所」だけ除く。** 除かずに置換して `保存先所` を 31 か所作った
-  - expected: 保存先
-    pattern: /置き場(?!所)/
   # 繋ぐやり方。表と表の `relation` を指さない
   - expected: リレーション
     pattern: 繋ぎ方
   # 容器。`container` を指さない
   - expected: コンテナ
     pattern: 入れ物
-  # 食器・容れ物。要求ごとの保持領域を指さない（「解析器」は辞書にある語なので除く）
+  # 食器・容れ物。要求ごとの保持領域を指さない（「解析器」「検出器」「評価器」は辞書にある語なので除く）
   - expected: コンテキスト
-    pattern: /(?<![機容成査計析])器/
+    pattern: /(?<![機容成査計析出価])器/
   # （無い語）
   - expected: エディタ
     pattern: 編集器
