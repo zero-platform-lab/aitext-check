@@ -10,6 +10,8 @@
 
 指摘するだけで、自動では直しません（`--fix` には対応していません）。直すのは書き手です。
 
+語彙と書き方のチェックの後に、ローカル LLM（Ollama）に文書を読ませるモードもあります（`--llm`）。主語のねじれや、1 つの文に多すぎる情報のような、ルールでは見つけにくい問題を指摘させます。詳しくは [llm.md](llm.md) を見てください。
+
 ## 使い方
 
 devDependencies に追加し、npm scripts から呼び出します。
@@ -32,6 +34,7 @@ aitext-check docs README.md          # 語彙（対象を指定する）
 aitext-check --prose                 # 書き方
 aitext-check --warn                  # 気をつける語
 printf '%s' "$文" | aitext-check --prose -   # 標準入力から読み込む
+aitext-check --llm docs/spec.md      # ローカル LLM で読む（対象は必ず指定する）
 ```
 
 対象を省略すると、リポジトリの `.md` ファイルすべてをチェックします。
@@ -57,5 +60,7 @@ node build-prh.mjs --check   # 辞書が words.md と一致しているかだけ
 - `.textlintrc.yml`、`.textlintrc.prose.yml`、`.textlintrc.warn.yml`: textlint の設定
 - `build-prh.mjs`: `words.md` から辞書を作るスクリプト
 - `bin/cli.mjs`: 同梱の設定で textlint を実行する CLI
+- `bin/llm.mjs`、`llm/prompt.md`: ローカル LLM で読むモードと、その指示文
+- `llm.md`: ローカル LLM で読むモードの使い方と、指示の決め方の根拠
 
 ルールの本体（textlint、prh、ja-technical-writing）は npm の依存パッケージです。このリポジトリには含めていません。
