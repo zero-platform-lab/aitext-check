@@ -10,7 +10,7 @@
 // LLM に読み違えさせないため（「並べ替えるとファイル名が変わる」「↑↓ は画面のボタン」など）。
 //
 // 指摘するだけで、ファイルは直さない。LLM が書いた「方向」の文は、aitext-check の語彙と
-// 気をつける語のルールでチェックし、当たったら一緒に表示する。
+// 気をつける語句のルールでチェックし、当たったら一緒に表示する。
 // 指示の決め方と、条件を変えて比べた結果は llm.md にある。
 import { spawnSync } from "node:child_process"
 import { existsSync, readFileSync } from "node:fs"
@@ -52,7 +52,7 @@ const system = readFileSync(path.join(pkgRoot, "llm", "prompt.md"), "utf8")
 	.replace("{{件数}}", String(opt.max))
 	.replace(/\n{3,}/g, "\n\n")
 
-// 「方向」の文を aitext-check の語彙と気をつける語でチェックする
+// 「方向」の文を aitext-check の語彙と気をつける語句でチェックする
 function ruleHits(text) {
 	const hits = []
 	for (const mode of [[], ["--warn"]]) {

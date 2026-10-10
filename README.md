@@ -4,9 +4,9 @@
 
 ## チェックする内容
 
-- **語彙**: 避けたい語を見つけて、代わりの語を示します（prh の辞書 `prh-error.yml`）
+- **語彙**: 修正すべき語句を見つけて、推奨する語句を示します（prh の辞書 `prh-error.yml`）
 - **書き方**: 文の長さや句点などを確かめます（`ja-technical-writing` のルール）。文書にだけ使います
-- **気をつける語**: 正しい使い方もある語を見つけて、warning を出します（`prh-warn.yml`）。チェックは失敗扱いにしません
+- **気をつける語句**: 正しい使い方と誤った使い方の両方がある語句を見つけて、warning を出します（`prh-warn.yml`）。チェックは失敗扱いにしません
 
 指摘するだけで、自動では直しません（`--fix` には対応していません）。直すのは書き手です。
 
@@ -14,7 +14,7 @@
 
 ## 使い方
 
-devDependencies に追加し、npm scripts から呼び出します。
+利用する側のリポジトリの `package.json` で、aitext-check を devDependencies に追加し、npm scripts から呼び出します。
 
 ```jsonc
 // package.json
@@ -32,7 +32,7 @@ devDependencies に追加し、npm scripts から呼び出します。
 aitext-check                         # 語彙（リポジトリの .md すべて）
 aitext-check docs README.md          # 語彙（対象を指定する）
 aitext-check --prose                 # 書き方
-aitext-check --warn                  # 気をつける語
+aitext-check --warn                  # 気をつける語句
 printf '%s' "$文" | aitext-check --prose -   # 標準入力から読み込む
 aitext-check --llm docs/spec.md      # ローカル LLM で読む（対象は必ず指定する）
 ```
@@ -44,9 +44,9 @@ aitext-check --llm docs/spec.md      # ローカル LLM で読む（対象は必
 
 チェックから外すファイルは、利用する側のリポジトリの `.textlintignore` に書きます。書き方のチェックだけから外すファイルは、`.textlintignore.prose` に書きます。
 
-## 辞書に語を追加する
+## 辞書に語句を追加する
 
-語の一覧は、`words.md` の表にだけあります。表に 1 行追加してから、辞書を作り直します。`prh-*.yml` は手で編集しません。
+語句の一覧は、`words.md` の表にだけあります。表に 1 行追加してから、辞書を作り直します。`prh-*.yml` は手で編集しません。
 
 ```sh
 node build-prh.mjs           # 辞書を作り直す
@@ -55,7 +55,7 @@ node build-prh.mjs --check   # 辞書が words.md と一致しているかだけ
 
 ## ファイル構成
 
-- `words.md`: 語の一覧（辞書の元データ）
+- `words.md`: 語句の一覧（辞書の元データ）
 - `prh-error.yml`、`prh-warn.yml`: `words.md` から作った prh の辞書
 - `.textlintrc.yml`、`.textlintrc.prose.yml`、`.textlintrc.warn.yml`: textlint の設定
 - `build-prh.mjs`: `words.md` から辞書を作るスクリプト
