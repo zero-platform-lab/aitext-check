@@ -109,7 +109,10 @@ function buildCare() {
 		const ok = cells.length > 1 ? cells[1] : ""
 		const mixed = cells.length > 3 ? cells[3] : ""
 		const why = `そのまま使ってよい意味: ${ok} / 紛れる意味: ${mixed}`
-		out.push(entry(word, `${word} (${mixed} の意味なら直す)`, why, "warning"))
+		// 正規表現の語は丸ごと括って、当たった文字 ($1) を警告に出す。`(?<!段)落と` を
+		// expected にそのまま書くと、警告の文言に正規表現が出る
+		const regex = isRegex(word)
+		out.push(entry(regex ? `(${word})` : word, `${regex ? "$1" : word} (${mixed} の意味なら直す)`, why, "warning"))
 	}
 	return out.join("\n") + "\n"
 }
