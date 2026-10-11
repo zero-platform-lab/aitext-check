@@ -3,7 +3,8 @@
 //
 //   aitext-check [paths...]          語彙（prh 辞書）。既定の対象はリポジトリの .md すべて
 //   aitext-check --prose [paths...]  書き方（ja-technical-writing）。文書だけに適用する
-//   aitext-check --warn [paths...]   気をつける語句（warning を出すだけで、失敗扱いにしない）
+//   aitext-check --warn [paths...]   気をつける語句（warning を出すだけで、失敗扱いにしない）。
+//                                    「ではなく」が 3 回以上ある節も出す（bin/count-dewanaku.mjs）
 //   printf '%s' "$文" | aitext-check --prose -   標準入力から読み込む
 //   aitext-check --llm <paths...>    ローカル LLM（Ollama）で読む（bin/llm.mjs、llm.md）
 //
@@ -13,7 +14,8 @@
 // から、prh の辞書は設定ファイルの場所から読み込む。
 import { spawnSync } from "node:child_process"
 import { createRequire } from "node:module"
-import { existsSync, readdirSync } from "node:fs"
+import { existsSync, readdirSync, readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs"
+import os from "node:os"
 import { fileURLToPath } from "node:url"
 import path from "node:path"
 
@@ -51,11 +53,16 @@ const CONFIG = {
 }
 const args = ["-c", path.join(pkgRoot, CONFIG[mode]), "--rules-base-directory", rulesDir]
 
+// 気をつける語句では、textlint の後に「ではなく」を節ごとに数える。標準入力の文は 2 回読むので、
+// 一時ファイルに書いておく
+let targets = []
+let stdinText = null
 if (argv[0] === "-") {
 	argv.shift()
 	args.push("--stdin", "--stdin-filename", "標準入力.md")
+	if (mode === "warn") stdinText = readFileSync(0, "utf8")
 } else {
-	const targets = argv.length ? argv : markdownFiles(userCwd)
+	targets = argv.length ? argv : markdownFiles(userCwd)
 	if (targets.length === 0) {
 		console.error("対象の .md ファイルがありません")
 		process.exit(1)
@@ -92,7 +99,8 @@ function walk(dir) {
 const color = process.stdout.isTTY ? { FORCE_COLOR: "1" } : {}
 const res = spawnSync(process.execPath, [textlintBin, ...args], {
 	cwd: userCwd,
-	stdio: ["inherit", "pipe", "inherit"],
+	stdio: [stdinText === null ? "inherit" : "pipe", "pipe", "inherit"],
+	input: stdinText ?? undefined,
 	env: { ...process.env, ...color },
 	encoding: "utf8",
 	maxBuffer: 64 * 1024 * 1024,
@@ -100,4 +108,17 @@ const res = spawnSync(process.execPath, [textlintBin, ...args], {
 const plain = (l) => l.replace(/\x1b\[[0-9;]*m/g, "")
 const shown = (res.stdout ?? "").split("\n").filter((l) => !/fixable problems?\.?$|^Try to run: \$ textlint --fix/.test(plain(l).trim()))
 process.stdout.write(shown.join("\n"))
+
+// 「ではなく」の数え上げ。--format で出力の形式を変えたとき（JSON など）は、形式が混ざるので出さない
+if (mode === "warn" && !argv.includes("--format") && !argv.includes("-f")) {
+	let tmp = null
+	let files = targets.filter((t) => t.endsWith(".md"))
+	if (stdinText !== null) {
+		tmp = mkdtempSync(path.join(os.tmpdir(), "aitext-check-"))
+		files = [path.join(tmp, "標準入力.md")]
+		writeFileSync(files[0], stdinText)
+	}
+	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "count-dewanaku.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
+	if (tmp) rmSync(tmp, { recursive: true, force: true })
+}
 process.exit(res.status ?? 1)

@@ -7,6 +7,8 @@
 - **語彙**: 修正すべき語句を見つけて、推奨する語句を示します（prh の辞書 `prh-error.yml`）
 - **書き方**: 文の長さや句点などを確かめます（`ja-technical-writing` のルール）。文書にだけ使います
 - **気をつける語句**: 正しい使い方と誤った使い方の両方がある語句を見つけて、warning を出します（`prh-warn.yml`）。チェックは失敗扱いにしません
+  - 書き言葉の技術文章に合わない書き方（口語、動詞の名詞化、冗長な言い回し）も、ここで見つけて書き言葉の候補を示します（`じゃない` → `ではない`、`確認を行う` → `確認する`）
+  - 「A ではなく B」が 3 回以上ある節も、その節の見出しの行に出します（`bin/count-dewanaku.mjs`）
 
 指摘するだけで、自動では直しません（`--fix` には対応していません）。直すのは書き手です。
 
@@ -53,6 +55,12 @@ node build-prh.mjs           # 辞書を作り直す
 node build-prh.mjs --check   # 辞書が words.md と一致しているかだけを確かめる
 ```
 
+文体を指摘する行（`words.md` の「文体を指摘する行」）を直したときは、試験も実行します。見落としが無いこと、誤検出が無いこと、「ではなく」の数え上げが合うことを確かめます。
+
+```sh
+npm run test:style
+```
+
 ## ファイル構成
 
 - `words.md`: 語句の一覧（辞書の元データ）
@@ -60,6 +68,8 @@ node build-prh.mjs --check   # 辞書が words.md と一致しているかだけ
 - `.textlintrc.yml`、`.textlintrc.prose.yml`、`.textlintrc.warn.yml`: textlint の設定
 - `build-prh.mjs`: `words.md` から辞書を作るスクリプト
 - `bin/cli.mjs`: 同梱の設定で textlint を実行する CLI
+- `bin/count-dewanaku.mjs`: 「ではなく」を節ごとに数えるスクリプト（`--warn` が textlint の後に実行する）
+- `test/`: 気をつける語句のうち文体を指摘する行の試験（`npm run test:style`）
 - `bin/llm.mjs`、`llm/prompt.md`: ローカル LLM で読むモードと、その指示文
 - `llm.md`: ローカル LLM で読むモードの使い方と、指示の決め方の根拠
 
