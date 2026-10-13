@@ -35,12 +35,25 @@
 - id: arukimawari
   kind: 語彙
   severity: error
-  matches:
-    - [{ surface: 歩き }, { surface: 回り }]
+  match: [{ surface: 歩き }, { surface: 回り }]
   say: 画面の確認
   why: walkthrough の直訳
   ng: [歩き回りをする]
   ok: [会場を歩き回る]
+
+- id: arukimawari-2
+  kind: 語彙
+  severity: error
+  # 単独の「歩き回り」は、kuromoji が動詞「歩き回る」の連用形にする。後ろが助詞・句点・文の終わりなら名詞とみる
+  match: [{ surface: 歩き回り }]
+  after:
+    - { pos: 助詞, pos1: [格助詞, 係助詞, 連体化, 副助詞] }
+    - { pos: 記号, pos1: [句点, 括弧閉] }
+    - { edge: true }
+  say: 画面の確認
+  why: walkthrough の直訳
+  ng: [歩き回り, 歩き回りは済んだ, 次は歩き回り。]
+  ok: [会場を歩き回り、資料を集めた, 会場を歩き回りたい]
 
 - id: forge
   kind: 語彙
@@ -293,13 +306,16 @@
 - id: fukidashi
   kind: 語彙
   severity: error
-  # kuromoji は名詞の「吹き出し」も動詞「吹き出す」の連用形にする。後ろが格助詞・係助詞なら名詞とみる
+  # kuromoji は名詞の「吹き出し」も動詞「吹き出す」の連用形にする。後ろが助詞・句点・文の終わりなら名詞とみる
   match: [{ surface: 吹き出し }]
-  after: [{ pos: 助詞, pos1: [格助詞, 係助詞, 連体化, 副助詞] }]
+  after:
+    - { pos: 助詞, pos1: [格助詞, 係助詞, 連体化, 副助詞] }
+    - { pos: 記号, pos1: [句点, 括弧閉] }
+    - { edge: true }
   say: ツールチップ
   why: 漫画の吹き出し
-  ng: [吹き出しを出す, 吹き出しが出る, 吹き出しに書く]
-  ok: [水が吹き出し、床が濡れた]
+  ng: [吹き出しを出す, 吹き出しが出る, 吹き出しに書く, 漫画の吹き出し, ここに吹き出し。]
+  ok: [水が吹き出し、床が濡れた, 水が吹き出した]
 
 - id: shinchoku-obi
   kind: 語彙

@@ -21,6 +21,9 @@ export default function (context, options = {}) {
 			const e = child.range[1] - node.range[0]
 			text = text.slice(0, s) + " ".repeat(e - s) + text.slice(e)
 		}
+		// 表のセルの元の文字列は、区切りの | を含む。kuromoji は | を名詞にするので、セルの終わりが
+		// 文の終わりに見えなくなる。同じ長さの空白に置き換える
+		if (node.type === Syntax.TableCell) text = text.replace(/^\|/, " ").replace(/\|\s*$/, (m) => " ".repeat(m.length))
 		for (const h of await check(text, rules)) {
 			report(node, {
 				message: `「${h.text}」→ ${h.rule.say}（${h.rule.why}）[${h.rule.id}]`,
