@@ -44,14 +44,20 @@ if (argv[0] === "--prose") {
 } else if (argv[0] === "--warn") {
 	mode = "warn"
 	argv.shift()
+} else if (argv[0] === "--morph") {
+	mode = "morph"
+	argv.shift()
 }
 
 const CONFIG = {
 	vocab: ".textlintrc.yml",
 	prose: ".textlintrc.prose.yml",
 	warn: ".textlintrc.warn.yml",
+	morph: ".textlintrc.morph.yml",
 }
 const args = ["-c", path.join(pkgRoot, CONFIG[mode]), "--rules-base-directory", rulesDir]
+// 形態素解析の規則は、このパッケージの textlint-rules/ にあるルールで当てる
+if (mode === "morph") args.push("--rulesdir", path.join(pkgRoot, "textlint-rules"))
 
 // 気をつける語句では、textlint の後に「ではなく」を節ごとに数える。標準入力の文は 2 回読むので、
 // 一時ファイルに書いておく

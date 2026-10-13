@@ -1,0 +1,476 @@
+# 形態素解析した語の並びに当てる規則。lib/morph.mjs が読む。
+#
+# words.md の「修正すべき語句」(prh-error.yml の元) を、語の単位の規則に書き直したもの。
+# 書き方は lib/morph.mjs の先頭のコメントを見る。
+#
+# ok は当たってはいけない文、ng は当たるべき文。test/morph.mjs がすべて確かめる。
+# 規則を足したり直したりしたら `npm run test:morph` を実行する。
+#
+# 項目:
+#   id        規則の名前 (重複させない)
+#   kind      語彙 / 言い回し
+#   severity  error / warning
+#   match     語の条件の並び (または matches に並びを複数)
+#   say       代わりに書く語
+#   why       なぜ直すか
+
+- id: yoki
+  kind: 語彙
+  severity: error
+  match: [{ base: 容器 }]
+  say: コンテナ
+  why: container の訳語。日本語では通じない
+  ng: [容器のイメージを取得する]
+  ok: []
+
+- id: kemuri-shiken
+  kind: 語彙
+  severity: error
+  match: [{ base: 煙 }, { base: 試験 }]
+  say: 経路の確認
+  why: smoke test の直訳
+  ng: [煙試験を流す]
+  ok: [煙が出た試験装置]
+
+- id: arukimawari
+  kind: 語彙
+  severity: error
+  match: [{ surface: 歩き }, { surface: 回り }]
+  say: 画面の確認
+  why: walkthrough の直訳
+  ng: [歩き回りをする]
+  ok: [会場を歩き回る]
+
+- id: arukimawari-2
+  kind: 語彙
+  severity: error
+  # 単独の「歩き回り」は、kuromoji が動詞「歩き回る」の連用形にする。後ろが助詞・句点・文の終わりなら名詞とみる
+  match: [{ surface: 歩き回り }]
+  after:
+    - { pos: 助詞, pos1: [格助詞, 係助詞, 連体化, 副助詞] }
+    - { pos: 記号, pos1: [句点, 括弧閉] }
+    - { edge: true }
+  say: 画面の確認
+  why: walkthrough の直訳
+  ng: [歩き回り, 歩き回りは済んだ, 次は歩き回り。]
+  ok: [会場を歩き回り、資料を集めた, 会場を歩き回りたい]
+
+- id: forge
+  kind: 語彙
+  severity: error
+  match: [{ base: フォージ }]
+  say: Git ホスティング
+  why: forge は日本では通じない
+  ng: [フォージに置く]
+  ok: []
+
+- id: mihari
+  kind: 語彙
+  severity: error
+  match: [{ base: [見張る, 見張り] }]
+  say: ウォッチ / 確かめる
+  why: 番をすること。機能の名前ならウォッチ、検査が調べることなら確かめる
+  ng: [変更を見張る, 見張りを置く, 検査が見張っていた]
+  ok: []
+
+- id: mihoncho
+  kind: 語彙
+  severity: error
+  match: [{ base: 見本 }, { base: 帳 }]
+  say: カタログ
+  why: 塗料や布の見本を綴じたもの。部品を実物の CSS で描いて並べたページはカタログ
+  ng: [見本帳を作る]
+  ok: [見本を見せる]
+
+- id: ikou-migration
+  kind: 語彙
+  severity: error
+  matches:
+    - [{ base: 移行 }, { base: を }, { base: [適用, 当てる, 流す] }]
+    - [{ base: 移行 }, { base: の }, { base: 適用 }]
+    - [{ base: 移行 }, { base: ファイル }]
+  say: マイグレーション
+  why: DB の形を変えるほうは「マイグレーション」
+  ng: [移行を適用する, 移行を当てた, 移行の適用, 移行を流した, 移行ファイルを書く]
+  ok: [サーバーの移行を計画する, データを別のサーバーへ移行する]
+
+- id: ikou-migration-2
+  kind: 語彙
+  severity: error
+  matches:
+    - [{ base: 適用 }, { base: 済み }, { base: の }, { base: 移行 }]
+    - [{ base: 未 }, { base: 適用 }, { base: の }, { base: 移行 }]
+    - [{ base: 節目 }, { base: の }, { base: 移行 }]
+  say: マイグレーション
+  why: DB の形を変えるほうは「マイグレーション」
+  ng: [適用済みの移行, 未適用の移行, 節目の移行]
+  ok: [適用済みの設定]
+
+- id: kubatta
+  kind: 語彙
+  severity: error
+  match: [{ base: 配る }, { base: た, pos: 助動詞 }, { base: [移行, マイグレーション, 版] }]
+  say: リリース済みの
+  why: 配るはブラウザへ送る意味で使っている
+  ng: [配った移行, 配ったマイグレーション, 配った版]
+  ok: [資料を配った後]
+
+- id: aikotoba
+  kind: 語彙
+  severity: error
+  match: [{ base: 合言葉 }]
+  say: パスワード / トークン
+  why: 味方かを確かめる符号。パスワードでもトークンでもない
+  ng: [合言葉を送る]
+  ok: []
+
+- id: fucho
+  kind: 語彙
+  severity: error
+  match: [{ base: 符丁 }]
+  say: 認可コード
+  why: 仲間内の隠語
+  ng: [符丁を返す]
+  ok: []
+
+- id: aizu-token
+  kind: 語彙
+  severity: error
+  matches:
+    - [{ base: 知る }, { base: ない }, { base: 合図 }]
+    - [{ base: そんな }, { base: 合図 }]
+    - [{ base: 使い切る }, { base: た }, { base: 合図 }]
+  say: トークン
+  why: 知らせるしるし。トークンではない
+  ng: [知らない合図, そんな合図, 使い切った合図]
+  ok: [開始の合図を出す]
+
+- id: aizu-signal
+  kind: 語彙
+  severity: error
+  match: [{ base: 停止 }, { base: の }, { base: 合図 }]
+  say: 停止シグナル
+  why: Unix のシグナルは「シグナル」
+  ng: [停止の合図を送る]
+  ok: []
+
+- id: kuchi-endpoint
+  kind: 語彙
+  severity: error
+  matches:
+    - [{ base: [生死, 監視, 運用] }, { base: の }, { base: 口 }]
+    - [{ base: 利用 }, { base: 者 }, { base: の }, { base: 口 }]
+  say: エンドポイント
+  why: 出入りする穴。HTTP の話ではない
+  ng: [生死の口, 監視の口, 運用の口, 利用者の口]
+  ok: [監視の口調]
+
+- id: ukeguchi
+  kind: 語彙
+  severity: error
+  match: [{ base: 受け口 }]
+  say: 受け側
+  why: 出入りする穴。HTTP の話ではない
+  ng: [受け口を作る]
+  ok: []
+
+- id: shiken-shirushi
+  kind: 語彙
+  severity: error
+  match: [{ base: 試験 }, { base: の }, { base: 印 }]
+  say: 試験の接頭辞
+  why: しるし全般。接頭辞を指さない
+  ng: [試験の印を付ける]
+  ok: []
+
+- id: tsuzuri
+  kind: 語彙
+  severity: error
+  matches:
+    - [{ base: 知る }, { base: ない }, { base: 綴り }]
+    - [{ base: 読める }, { base: ない }, { base: 綴り }]
+    - [{ base: 間違える }, { base: た }, { base: 綴り }]
+  say: 値
+  why: 字の並べ方。識別子の文字列ではない
+  ng: [知らない綴り, 読めない綴り, 間違えた綴り]
+  ok: [英単語の綴りを覚える]
+
+- id: dodai
+  kind: 語彙
+  severity: error
+  match: [{ base: 土台 }]
+  say: ベースイメージ / 前提のデータ
+  why: 建物の基礎
+  ng: [土台のイメージ]
+  ok: []
+
+- id: mochimawaru
+  kind: 語彙
+  severity: error
+  match: [{ base: [持ち回る, 持ち回り] }]
+  say: 持ち越す / 引き渡す
+  why: 順に回すこと
+  ng: [値を持ち回る, 持ち回りの値, 次へ持ち回った]
+  ok: []
+
+- id: jikei
+  kind: 語彙
+  severity: error
+  match: [{ base: 字形 }]
+  say: アイコン
+  why: 字の形 (glyph) のこと。書体の話でだけ使う
+  ng: [字形を描く]
+  ok: []
+
+- id: botan-kanji
+  kind: 語彙
+  severity: error
+  match: [{ base: 釦 }]
+  say: ボタン
+  why: 古風。button の訳語としては通らない
+  ng: [釦を押す]
+  ok: []
+
+- id: fuda
+  kind: 語彙
+  severity: error
+  match: [{ base: 札, pos1: 一般 }]
+  say: バッジ
+  why: 名札・付箋のこと。badge を指さない
+  ng: [番号の札, 小さな札, 状態の札を付ける]
+  ok: [札幌の会場]
+
+- id: waki
+  kind: 語彙
+  severity: error
+  match: [{ base: 脇 }]
+  say: サイドバー / 横
+  why: 体の脇のこと。aside の訳語としては通らない
+  ng: [脇に置く, 画面の脇]
+  ok: [脇役]
+
+- id: shirase
+  kind: 語彙
+  severity: error
+  match: [{ surface: 知らせ, pos: 名詞 }]
+  say: 通知
+  why: flash / notification は「通知」
+  ng: [知らせを出す]
+  ok: [利用者に知らせる, 管理者に知らせた]
+
+- id: shitaji
+  kind: 語彙
+  severity: error
+  match: [{ base: 下地 }]
+  say: 背景
+  why: 塗りの下ごしらえ。background ではない
+  ng: [下地の色]
+  ok: []
+
+- id: soemono
+  kind: 語彙
+  severity: error
+  match: [{ base: 添え物 }]
+  say: 補助要素
+  why: 取るに足らないもの、の含み
+  ng: [添え物の要素]
+  ok: []
+
+- id: memori
+  kind: 語彙
+  severity: error
+  match: [{ base: 目盛り }]
+  say: スケール
+  why: 計器の刻み。間隔の刻みは「スケール」
+  ng: [目盛りを刻む]
+  ok: []
+
+- id: osu-mato
+  kind: 語彙
+  severity: error
+  match: [{ base: 押す }, { base: 的, pos1: 接尾 }]
+  say: タップ領域
+  why: 的は標的。target size は「タップ領域」
+  ng: [押す的が小さい]
+  ok: []
+
+- id: peji-kanji
+  kind: 語彙
+  severity: error
+  match: [{ base: 頁 }]
+  say: ページ
+  why: 古風
+  ng: [頁を開く]
+  ok: []
+
+- id: fukidashi
+  kind: 語彙
+  severity: error
+  # kuromoji は名詞の「吹き出し」も動詞「吹き出す」の連用形にする。後ろが助詞・句点・文の終わりなら名詞とみる
+  match: [{ surface: 吹き出し }]
+  after:
+    - { pos: 助詞, pos1: [格助詞, 係助詞, 連体化, 副助詞] }
+    - { pos: 記号, pos1: [句点, 括弧閉] }
+    - { edge: true }
+  say: ツールチップ
+  why: 漫画の吹き出し
+  ng: [吹き出しを出す, 吹き出しが出る, 吹き出しに書く, 漫画の吹き出し, ここに吹き出し。]
+  ok: [水が吹き出し、床が濡れた, 水が吹き出した]
+
+- id: shinchoku-obi
+  kind: 語彙
+  severity: error
+  match: [{ base: 進捗 }, { base: の }, { base: 帯 }]
+  say: プログレスバー
+  why: progress bar
+  ng: [進捗の帯]
+  ok: []
+
+- id: me-kara-kakusu
+  kind: 語彙
+  severity: error
+  match: [{ base: 目 }, { base: から }, { base: 隠す }]
+  say: 視覚的に隠す
+  why: visually hidden
+  ng: [目から隠す]
+  ok: []
+
+- id: nafuda
+  kind: 語彙
+  severity: error
+  match: [{ base: 名札 }]
+  say: セレクター
+  why: 名前を書いた札。DKIM の selector ではない
+  ng: [名札を付ける]
+  ok: []
+
+- id: sejo
+  kind: 語彙
+  severity: error
+  match: [{ base: 施錠 }]
+  say: ロック
+  why: 鍵をかけて戸締まりすること。アカウントの lock ではない
+  ng: [施錠する, アカウントの施錠]
+  ok: []
+
+- id: nigasu
+  kind: 語彙
+  severity: error
+  match: [{ base: 逃がす }]
+  say: エスケープ
+  why: 捕まえずに放すこと。escape を指さない
+  ng: [文字を逃がす, 引用符を逃がした]
+  ok: []
+
+- id: tsunagikata
+  kind: 語彙
+  severity: error
+  match: [{ base: 繋ぐ }, { surface: 方, pos1: 接尾 }]
+  say: リレーション
+  why: 繋ぐやり方。表と表の relation を指さない
+  ng: [繋ぎ方を決める]
+  ok: [ケーブルを繋ぐ]
+
+- id: iremono
+  kind: 語彙
+  severity: error
+  match: [{ base: 入れ物 }]
+  say: コンテナ
+  why: 容器。container を指さない
+  ng: [入れ物を使う]
+  ok: []
+
+- id: utsuwa
+  kind: 語彙
+  severity: error
+  # 「解析器」「検出器」の器は接尾。単独の「器」(名詞-一般) だけに当てる
+  match: [{ base: 器, pos1: 一般 }]
+  say: コンテキスト
+  why: 食器・容れ物。要求ごとの保持領域を指さない
+  ng: [要求ごとの器]
+  ok: [解析器, 検出器, 評価器, 計器, 機器]
+
+- id: henshuki
+  kind: 語彙
+  severity: error
+  match: [{ base: 編集 }, { base: 器, pos1: 接尾 }]
+  say: エディタ
+  why: （無い語）
+  ng: [編集器で開く]
+  ok: [編集画面]
+
+- id: yobina
+  kind: 語彙
+  severity: error
+  match: [{ base: 呼び名 }]
+  say: 表示名
+  why: あだ名・通称。画面に出る label ではない
+  ng: [呼び名を付ける]
+  ok: []
+
+- id: hinagata
+  kind: 語彙
+  severity: error
+  match: [{ base: 雛形 }]
+  say: テンプレート
+  why: 型紙。同じものを 2 つの語で呼ばない
+  ng: [雛形を使う]
+  ok: []
+
+- id: dekiru-koto-shori
+  kind: 言い回し
+  severity: error
+  matches:
+    - [{ base: できる }, { base: こと }, { base: に }, { base: 処理 }, { base: を }, { base: 書く }, { base: ない }]
+    - [{ base: できる }, { base: こと }, { base: に }, { base: 画面 }, { base: 側 }, { base: の }, { base: 処理 }, { base: を }, { base: 書く }, { base: ない }]
+  say: （書かない）
+  why: 全体の決まりとして書かない。要件が画面側の処理を認めていたのに、この一文に従って実装しなかった例がある。その場の説明は書いてよい
+  ng: [できることに処理を書かない, できることに画面側の処理を書かない]
+  ok: [ここは details で足りるので、処理を書かない]
+
+- id: hijoguchi
+  kind: 語彙
+  severity: error
+  match: [{ base: 非常口 }]
+  say: 緊急用のログイン / 緊急時の手段
+  why: 建物の避難口。ログインの手段 (一度きりの URL など) を指さない
+  ng: [非常口から入る]
+  ok: []
+
+- id: shinagaki
+  kind: 語彙
+  severity: error
+  match: [{ base: 品書き }]
+  say: メニュー / コンテキストメニュー
+  why: 料理の一覧。画面の menu を指さない
+  ng: [品書きを出す]
+  ok: []
+
+- id: kisoku-base
+  kind: 語彙
+  severity: error
+  match: [{ base: 規則 }, { base: ベース }]
+  say: ルールベース
+  why: 「ルールベース」が定着している
+  ng: [規則ベースの校正]
+  ok: []
+
+- id: kisoku-rule
+  kind: 語彙
+  severity: error
+  matches:
+    - [{ surface: [textlint, prh, lint, 校正, チェック, 書き方, 語彙] }, { base: の, pos1: 連体化 }, { base: 規則 }]
+  say: ルール
+  why: textlint の rules は「ルール」と呼ぶ (textlint の日本語の文書も「ルール」)
+  ng: [textlint の規則, 書き方の規則, 語彙の規則, prh の規則, 校正の規則]
+  ok: [会社の規則]
+
+- id: obi-bar
+  kind: 語彙
+  severity: error
+  # 1 文字の「帯」だけでは「時間帯」「帯域」に当たる。位置の語と組にする (「時間帯」の帯は接尾なので、どのみち当たらない)
+  match: [{ base: [上, 下, 左, 右] }, { base: の }, { base: 帯, pos1: 一般 }]
+  say: 上部のバー / 下部のバー
+  why: 帯状の飾りのこと。画面の上下に並ぶ toolbar を指さない
+  ng: [上の帯, 下の帯に置く]
+  ok: [時間帯, 帯域が足りない]

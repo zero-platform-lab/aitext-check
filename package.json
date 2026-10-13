@@ -10,10 +10,13 @@
 		"build-prh": "node build-prh.mjs",
 		"check-prh": "node build-prh.mjs --check",
 		"selftest": "node bin/cli.mjs README.md && node bin/cli.mjs --prose README.md",
-		"test:style": "node test/style.mjs"
+		"test:style": "node test/style.mjs",
+		"test:morph": "node test/morph.mjs"
 	},
 	"dependencies": {
 		"@textlint/markdown-to-ast": "^15.8.0",
+		"js-yaml": "^4.3.2",
+		"kuromojin": "^3.0.1",
 		"textlint": "^15.8.0",
 		"textlint-filter-rule-comments": "^1.3.0",
 		"textlint-rule-preset-ja-technical-writing": "^12.0.2",

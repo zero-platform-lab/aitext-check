@@ -1,0 +1,9 @@
+# 形態素解析した語の並びに rules.yml の規則を当てる設定 (textlint-rules/aitext-morph.js)。
+#
+# **試している途中。** prh の辞書 (.textlintrc.yml) と結果を比べるために、別の設定にしてある。
+# 比べた結果がよければ、語彙のチェックをこちらへ置き換える。
+filters:
+  comments: true
+rules:
+  aitext-morph:
+    severity: error
