@@ -99,11 +99,11 @@ function buildBan() {
 	return out.join("\n") + "\n"
 }
 
-// 気をつける語句。チェックを失敗扱いにしない（warning）。expected を pattern と同じにすると
+// 注意が必要な語句。チェックを失敗扱いにしない（warning）。expected を pattern と同じにすると
 // prh は何も出さないので、紛れる意味を expected に書き、警告の文言として表示する。
 function buildCare() {
-	const out = head("気をつける語句（warning を出すだけ。正しい使い方もある）")
-	for (const cells of visibleAll("気をつける語句")) {
+	const out = head("注意が必要な語句（warning を出すだけ。正しい使い方もある）")
+	for (const cells of visibleAll("注意が必要な語句")) {
 		const word = unquote(cells[0])
 		const ok = cells.length > 1 ? cells[1] : ""
 		const mixed = cells.length > 3 ? cells[3] : ""
@@ -139,6 +139,6 @@ if (process.argv.includes("--check")) {
 
 for (const [p, text] of made) writeFileSync(p, text, "utf8")
 const ban = visibleAll("修正すべき語句").length
-const care = visibleAll("気をつける語句").length
-const skip = rows("修正すべき語句").length + rows("気をつける語句").length - ban - care
+const care = visibleAll("注意が必要な語句").length
+const skip = rows("修正すべき語句").length + rows("注意が必要な語句").length - ban - care
 console.log(`prh-error.yml (${ban} 件) と prh-warn.yml (${care} 件) を作った（見る場所が 全部 でない ${skip} 件は書き出していない）`)

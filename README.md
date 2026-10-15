@@ -6,7 +6,7 @@
 
 - **語彙**: 修正すべき語句を見つけて、推奨する語句を示します（prh の辞書 `prh-error.yml`）
 - **書き方**: 文の長さや句点などを確かめます（`ja-technical-writing` のルール）。文書にだけ使います
-- **気をつける語句**: 正しい使い方と誤った使い方の両方がある語句を見つけて、warning を出します（`prh-warn.yml`）。チェックは失敗扱いにしません
+- **注意が必要な語句**: 正しい使い方と誤った使い方の両方がある語句を見つけて、warning を出します（`prh-warn.yml`）。チェックは失敗扱いにしません
   - 書き言葉の技術文章に合わない書き方（口語、動詞の名詞化、冗長な言い回し）も、ここで見つけて書き言葉の候補を示します（`じゃない` → `ではない`、`確認を行う` → `確認する`）
   - 「A ではなく B」が 3 回以上ある節も、その節の見出しの行に出します（`bin/count-dewanaku.mjs`）
 
@@ -34,7 +34,7 @@
 aitext-check                         # 語彙（リポジトリの .md すべて）
 aitext-check docs README.md          # 語彙（対象を指定する）
 aitext-check --prose                 # 書き方
-aitext-check --warn                  # 気をつける語句
+aitext-check --warn                  # 注意が必要な語句
 printf '%s' "$文" | aitext-check --prose -   # 標準入力から読み込む
 aitext-check --llm docs/spec.md      # ローカル LLM で読む（対象は必ず指定する）
 ```
@@ -69,7 +69,7 @@ npm run test:style
 - `build-prh.mjs`: `words.md` から辞書を作るスクリプト
 - `bin/cli.mjs`: 同梱の設定で textlint を実行する CLI
 - `bin/count-dewanaku.mjs`: 「ではなく」を節ごとに数えるスクリプト（`--warn` が textlint の後に実行する）
-- `test/`: 気をつける語句のうち文体を指摘する行の試験（`npm run test:style`）
+- `test/`: 注意が必要な語句のうち文体を指摘する行の試験（`npm run test:style`）
 - `bin/llm.mjs`、`llm/prompt.md`: ローカル LLM で読むモードと、その指示文
 - `llm.md`: ローカル LLM で読むモードの使い方と、指示の決め方の根拠
 
