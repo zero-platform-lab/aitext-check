@@ -46,6 +46,26 @@ aitext-check --llm docs/spec.md      # ローカル LLM で読む（対象は必
 
 チェックから外すファイルは、利用する側のリポジトリの `.textlintignore` に書きます。書き方のチェックだけから外すファイルは、`.textlintignore.prose` に書きます。
 
+### プロジェクト固有の語句
+
+製品名の表記のように、このパッケージの辞書に入れられない語句は、利用する側のリポジトリに prh の形式で置きます。同梱の辞書に足して読みます。
+
+| ファイル | 足す先 | 重大度 |
+|---|---|---|
+| `aitext-words.yml` | 語彙 (`aitext-check`) | error |
+| `aitext-words.warn.yml` | 気をつける語句 (`aitext-check --warn`) | warning |
+
+```yaml
+# aitext-words.warn.yml
+version: 1
+rules:
+  - expected: Entra ID (旧称を指す文脈か、外部資料の引用でなければ Entra ID)
+    pattern: Azure AD
+    severity: warning
+```
+
+書き方のチェック (`--prose`) は語句の辞書を使わないので、足す先はありません。
+
 ## 辞書に語句を追加する
 
 語句の一覧は、`words.md` の表にだけあります。表に 1 行追加してから、辞書を作り直します。`prh-*.yml` は手で編集しません。

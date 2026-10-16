@@ -8,6 +8,10 @@
 //   printf '%s' "$文" | aitext-check --prose -   標準入力から読み込む
 //   aitext-check --llm <paths...>    ローカル LLM（Ollama）で読む（bin/llm.mjs、llm.md）
 //
+// **プロジェクト固有の語句は、利用側のリポジトリに置く。** 製品名の表記のように、
+// このパッケージの辞書に入れられない語句は、利用側に prh の形式で書けば同梱の辞書に
+// 足して読む（`aitext-words.yml` が語彙、`aitext-words.warn.yml` が気をつける語句）。
+//
 // textlint は利用側のディレクトリ（呼び出し元のカレントディレクトリ）で起動する。
 // 対象のパスと .textlintignore は、利用側を基準に解釈されるようにするため。
 // ルールのパッケージは、このパッケージの依存として入っている場所（--rules-base-directory）
@@ -51,7 +55,29 @@ const CONFIG = {
 	prose: ".textlintrc.prose.yml",
 	warn: ".textlintrc.warn.yml",
 }
-const args = ["-c", path.join(pkgRoot, CONFIG[mode]), "--rules-base-directory", rulesDir]
+
+// 利用側のリポジトリに置く、プロジェクト固有の辞書。prh の形式で書く。
+// 書き方のルール（--prose）は語句の辞書を使わないので、足す先は語彙と気をつける語句だけ。
+const LOCAL_DICT = {
+	vocab: "aitext-words.yml",
+	warn: "aitext-words.warn.yml",
+}
+
+// 設定ファイルは同梱のものを使う。利用側の辞書があるときだけ、rulePaths に 1 行足したものを
+// 一時ファイルに書き出す。**同梱の辞書のパスも絶対パスに直す。** prh は rulePaths を設定
+// ファイルの場所から解決するので、一時ファイルに書くと `./prh-error.yml` が見つからなくなる
+let configPath = path.join(pkgRoot, CONFIG[mode])
+let tmpConfigDir = null
+const localDict = LOCAL_DICT[mode] ? path.join(userCwd, LOCAL_DICT[mode]) : null
+if (localDict && existsSync(localDict)) {
+	const text = readFileSync(configPath, "utf8")
+		.replace(/^(\s*)-\s*\.\/(\S+\.yml)\s*$/gm, (_, indent, f) => `${indent}- ${JSON.stringify(path.join(pkgRoot, f))}`)
+		.replace(/^(\s*rulePaths:\s*)$/m, (m) => `${m}\n      - ${JSON.stringify(localDict)}`)
+	tmpConfigDir = mkdtempSync(path.join(os.tmpdir(), "aitext-check-config-"))
+	configPath = path.join(tmpConfigDir, CONFIG[mode])
+	writeFileSync(configPath, text)
+}
+const args = ["-c", configPath, "--rules-base-directory", rulesDir]
 
 // 気をつける語句では、textlint の後に「ではなく」を節ごとに数える。標準入力の文は 2 回読むので、
 // 一時ファイルに書いておく
@@ -121,4 +147,5 @@ if (mode === "warn" && !argv.includes("--format") && !argv.includes("-f")) {
 	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "count-dewanaku.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
 	if (tmp) rmSync(tmp, { recursive: true, force: true })
 }
+if (tmpConfigDir) rmSync(tmpConfigDir, { recursive: true, force: true })
 process.exit(res.status ?? 1)
