@@ -147,3 +147,93 @@ rules:
   # 帯状の飾りのこと。画面の上下に並ぶ `toolbar` を指さない（1 文字の `帯` は「時間帯」「帯域」に一致するので、位置の語と組にした）
   - expected: 上部のバー / 下部のバー
     pattern: /[上下左右]の帯/
+  # 名詞に勢いのある動詞を付けた言い方
+  - expected: 特にハマりやすいのは
+    pattern: 効く罠
+  # 強調の定型
+  - expected: これが
+    pattern: これこそが
+  # 推量の敬体。だ・である体に揃える
+  - expected: と言える
+    pattern: /と言え(よう|るでしょう)/
+  # 大げさな抽象
+  - expected: 実際に確認する
+    pattern: /現実を見(る|ます|て)/
+  # 教育評価の用語。日常語で言える
+  - expected: チェックリスト
+    pattern: ルーブリック
+  # 言語学の用語。日常語で言える
+  - expected: カタカナ語
+    pattern: 借用語
+  # 重言
+  - expected: まず / 最初に
+    pattern: まず最初に
+  # 重言
+  - expected: 最適
+    pattern: 一番最適
+  # 重言
+  - expected: 現在
+    pattern: 今現在
+  # 重言。`ACL` の `L` が `List`
+  - expected: ACL
+    pattern: ACL リスト
+  # 重言。`PIN` の `N` が `Number`
+  - expected: PIN
+    pattern: PIN 番号
+  # 重言
+  - expected: 既定値
+    pattern: デフォルト既定値
+  # 重言。過半数が既に半数を超えている
+  - expected: 半数を超え / 過半数に達し
+    pattern: 過半数を超え
+  # 出典のない断定。将棋や囲碁の語
+  - expected: 常道 / よくある構成
+    pattern: 定石
+  # 出典のない断定
+  - expected: 本来の進め方
+    pattern: 本筋
+  # 出典のない断定。数えた根拠が無い
+  - expected: よくある
+    pattern: 最も一般的
+  # 出典のない断定
+  - expected: 採用例がある
+    pattern: 実績が厚い
+  # 出典のない断定
+  - expected: 採用例がある
+    pattern: 採用実績は多い
+  # 出典のない断定
+  - expected: よく出る
+    pattern: 最頻出
+  # 出典のない断定
+  - expected: 基本の進め方
+    pattern: 王道
+  # 比喩名詞。内臓のこと（「肝心」「肝要」は当たらない）
+  - expected: $1要点
+    pattern: /(の|が)肝(?![心要])/
+  # 比喩名詞
+  - expected: 要点
+    pattern: 勘所
+  # 比喩名詞。野球や将棋の語
+  - expected: 決め手
+    pattern: 決定打
+  # 比喩名詞
+  - expected: 中核
+    pattern: 心臓部
+  # 比喩名詞
+  - expected: 骨格 / 基盤
+    pattern: 背骨
+  # 比喩名詞
+  - expected: の基盤
+    pattern: の土台
+  # 比喩名詞
+  - expected: の中心
+    pattern: /の核(?!心)/
+  # 大げさな抽象
+  - expected: が何か
+    pattern: の正体
+  # 大げさな抽象
+  - expected: どれが正しいか
+    pattern: 真実の所在
+  # 日常語で言える。「アサインする」は「割り当てる」
+  - expected: 割り当て
+    pattern: アサイン
