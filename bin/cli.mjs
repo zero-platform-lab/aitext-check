@@ -3,7 +3,7 @@
 //
 //   aitext-check [paths...]          語彙（prh 辞書）。既定の対象はリポジトリの .md すべて
 //   aitext-check --prose [paths...]  書き方（ja-technical-writing）。文書だけに適用する
-//   aitext-check --warn [paths...]   気をつける語句（warning を出すだけで、失敗扱いにしない）。
+//   aitext-check --warn [paths...]   注意が必要な語句（warning を出すだけで、失敗扱いにしない）。
 //                                    「ではなく」が 3 回以上ある節も出す（bin/count-dewanaku.mjs）
 //   printf '%s' "$文" | aitext-check --prose -   標準入力から読み込む
 //   aitext-check --llm <paths...>    ローカル LLM（Ollama）で読む（bin/llm.mjs、llm.md）
@@ -79,7 +79,7 @@ if (localDict && existsSync(localDict)) {
 }
 const args = ["-c", configPath, "--rules-base-directory", rulesDir]
 
-// 気をつける語句では、textlint の後に「ではなく」を節ごとに数える。標準入力の文は 2 回読むので、
+// 注意が必要な語句では、textlint の後に「ではなく」を節ごとに数える。標準入力の文は 2 回読むので、
 // 一時ファイルに書いておく
 let targets = []
 let stdinText = null
