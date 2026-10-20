@@ -1,0 +1,6 @@
+{
+	"name": "textlint-rule-aitext-morph",
+	"private": true,
+	"type": "module",
+	"main": "index.js"
+}

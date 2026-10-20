@@ -6,4 +6,4 @@ filters:
   comments: true
 rules:
   aitext-morph:
-    severity: error
+    levels: [error, warning]

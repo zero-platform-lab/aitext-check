@@ -14,7 +14,7 @@
 // から、prh の辞書は設定ファイルの場所から読み込む。
 import { spawnSync } from "node:child_process"
 import { createRequire } from "node:module"
-import { existsSync, readdirSync, readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs"
+import { existsSync, readdirSync, readFileSync, writeFileSync, mkdtempSync, rmSync, symlinkSync } from "node:fs"
 import os from "node:os"
 import { fileURLToPath } from "node:url"
 import path from "node:path"
@@ -55,9 +55,19 @@ const CONFIG = {
 	warn: ".textlintrc.warn.yml",
 	morph: ".textlintrc.morph.yml",
 }
-const args = ["-c", path.join(pkgRoot, CONFIG[mode]), "--rules-base-directory", rulesDir]
-// 形態素解析の規則は、このパッケージの textlint-rules/ にあるルールで当てる
-if (mode === "morph") args.push("--rulesdir", path.join(pkgRoot, "textlint-rules"))
+// 形態素解析の規則は、このパッケージの textlint-rules/aitext-morph にあるルールで当てる。
+// textlint は設定ファイルのルールを、--rules-base-directory の下の npm パッケージとしてしか探さない
+// (--rulesdir で渡すと、設定ファイルの読み込みが失敗し、options と filters が黙って捨てられた)。
+// そこで一時ディレクトリに、このルールと、設定が使うフィルターへのリンクを置いて渡す
+let rulesBase = rulesDir
+let morphBase = null
+if (mode === "morph") {
+	morphBase = mkdtempSync(path.join(os.tmpdir(), "aitext-check-rules-"))
+	symlinkSync(path.join(pkgRoot, "textlint-rules", "aitext-morph"), path.join(morphBase, "textlint-rule-aitext-morph"), "dir")
+	symlinkSync(path.join(rulesDir, "textlint-filter-rule-comments"), path.join(morphBase, "textlint-filter-rule-comments"), "dir")
+	rulesBase = morphBase
+}
+const args = ["-c", path.join(pkgRoot, CONFIG[mode]), "--rules-base-directory", rulesBase]
 
 // 気をつける語句では、textlint の後に「ではなく」を節ごとに数える。標準入力の文は 2 回読むので、
 // 一時ファイルに書いておく
@@ -127,4 +137,5 @@ if (mode === "warn" && !argv.includes("--format") && !argv.includes("-f")) {
 	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "count-dewanaku.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
 	if (tmp) rmSync(tmp, { recursive: true, force: true })
 }
+if (morphBase) rmSync(morphBase, { recursive: true, force: true })
 process.exit(res.status ?? 1)

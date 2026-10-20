@@ -37,6 +37,7 @@ aitext-check --prose                 # 書き方
 aitext-check --warn                  # 気をつける語句
 printf '%s' "$文" | aitext-check --prose -   # 標準入力から読み込む
 aitext-check --llm docs/spec.md      # ローカル LLM で読む（対象は必ず指定する）
+aitext-check --morph                 # 形態素解析した語の並びに rules.yml の規則を当てる（試している途中）
 ```
 
 対象を省略すると、リポジトリの `.md` ファイルすべてをチェックします。
@@ -72,5 +73,10 @@ npm run test:style
 - `test/`: 気をつける語句のうち文体を指摘する行の試験（`npm run test:style`）
 - `bin/llm.mjs`、`llm/prompt.md`: ローカル LLM で読むモードと、その指示文
 - `llm.md`: ローカル LLM で読むモードの使い方と、指示の決め方の根拠
+- `rules.yml`: 形態素解析した語の並びに当てる規則（語彙と言い回し）。規則ごとに、当たるべき文と当たってはいけない文を持つ
+- `lib/morph.mjs`: kuromoji で解析した語に `rules.yml` の規則を当てる。規則の書き方は先頭のコメントにある
+- `textlint-rules/aitext-morph/`、`.textlintrc.morph.yml`: `--morph` で使う textlint のルールと設定
+- `bin/morph.mjs`: 文の解析結果と、当たる規則を出す（規則を書くときに使う）
+- `test/morph.mjs`: `rules.yml` の全規則を例文で確かめる（`npm run test:morph`）
 
 ルールの本体（textlint、prh、ja-technical-writing）は npm の依存パッケージです。このリポジトリには含めていません。
