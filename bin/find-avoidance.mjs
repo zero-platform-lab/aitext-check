@@ -14,7 +14,8 @@
 //   狭い確認     「確かめた」「通った」「開く」の後に「ので」「から」が続き、同じ文で
 //                「満たす」「問題ない」「動く」と判定している（「ページが開くことも
 //                確かめたので、要件は満たしています」）。確かめた範囲で言える判定か
-//   長い一覧     項目が 10 個以上の箇条書き（手順を 11 個並べた）。全部並べていないか
+//   長い一覧     項目が 10 個以上の箇条書き（手順を 11 個並べた）。全部並べていないか。
+//                見出しへのリンクだけを並べた目次は外す
 //
 // 動詞は kuromoji の基本形で見るので、「出した」「出しています」「並べました」のどれにも当たる。
 //
@@ -63,6 +64,15 @@ function textOf(node) {
 	return (node.children || []).map(textOf).join("")
 }
 
+// 目次: どの項目も、同じ文書の見出しへのリンク（[概要](#概要)）だけの箇条書き。見出しの数だけ並ぶのが正しいので外す
+function isToc(list) {
+	const links = (node) => (node.children || []).flatMap((c) => (c.type === "Link" ? [c] : links(c)))
+	return list.children.every((item) => {
+		const ls = links(item).filter((l) => l.url.startsWith("#"))
+		return ls.length > 0 && textOf(item).trim() === ls.map(textOf).join("").trim()
+	})
+}
+
 async function find(text) {
 	const found = []
 	let disabled = false
@@ -74,7 +84,7 @@ async function find(text) {
 		}
 		if (disabled) continue
 		if (n.type === "List") {
-			if (n.children.length > MAX_LIST) found.push({ line: n.loc.start.line, rule: "list", message: MESSAGE.list(n.children.length) })
+			if (n.children.length > MAX_LIST && !isToc(n)) found.push({ line: n.loc.start.line, rule: "list", message: MESSAGE.list(n.children.length) })
 			continue
 		}
 		const para = textOf(n)
