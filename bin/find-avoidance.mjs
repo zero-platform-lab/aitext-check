@@ -91,7 +91,8 @@ async function find(text) {
 			if (ai !== -1) {
 				const vi = tokens.findIndex((t, i) => i > ai && !["を", "は", "も", "、"].includes(t.surface_form))
 				const after = tokens.slice(vi + 1, vi + 3).map((t) => t.surface_form).join("")
-				if (vi !== -1 && SHOW.has(tokens[vi].basic_form) && !/^(と|ば|ても|たら|だら)/.test(after)) hit("all")
+				// 「全部出す: …」「全部出す 7 件」のように、書き方の名前として書いた箇所（直後がコロンか数）も外す
+				if (vi !== -1 && SHOW.has(tokens[vi].basic_form) && !/^(と|ば|ても|たら|だら|:|：|\s*[0-9０-９])/.test(after)) hit("all")
 			}
 			if (STANDARD_REASON.test(sentence)) hit("standard")
 			if (/はず(です|だ|である)?[。！？]?\s*$/.test(sentence.trim())) hit("hazu")
