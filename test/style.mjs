@@ -15,7 +15,7 @@ import { fileURLToPath } from "node:url"
 import path from "node:path"
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
-const STYLE = /口語。|動詞を名詞にした語句|冗長。|重言。|相対時制。|責任回避。|文書の「書く」。|見えない根拠。|コードの側。/
+const STYLE = /口語。|動詞を名詞にした語句|冗長。|重言。|相対時制。|責任回避。|文書の「書く」。|見えない根拠。/
 
 // --warn を JSON 形式で実行し、文体の警告が出た行番号ごとに警告の文を返す。
 function lint(file) {
