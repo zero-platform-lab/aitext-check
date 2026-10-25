@@ -56,6 +56,8 @@ aitext-check --llm docs/spec.md      # ローカル LLM で読む（対象は必
 
 `--reply` は、AI の返答を Claude Code のフックなどで確かめるときに使います。返答では、検出する語そのもの（「未確認」）を「」で引いて説明することが多いので、「」の中を読みません。文書では「」の中にも直すべき文が入るので、文書には使いません。
 
+`--reply` のときは、番号を振らずに 2 つ以上の質問をしている箇所にも warning を出します（`bin/find-questions.mjs`）。番号があれば、読む人は「1 はこう、2 はこう」と番号で返事ができます。
+
 対象を省略すると、リポジトリの `.md` ファイルすべてをチェックします。
 
 - git のリポジトリの中: git が管理しているファイル（`.gitignore` で除外したファイルは含まない）
@@ -108,6 +110,7 @@ npm run test:style
 - `bin/count-dewanaku.mjs`: 「ではなく」を節ごとに数えるスクリプト（`--warn` が textlint の後に実行する）
 - `bin/find-nominal.mjs`: 動詞を名詞として使った箇所を、形態素解析で見つけるスクリプト（`--warn` が textlint の後に実行する）
 - `bin/find-avoidance.mjs`: 責任を避ける書き方を、文の組み立てと箇条書きの長さから見つけるスクリプト（`--warn` が textlint の後に実行する）
+- `bin/find-questions.mjs`: 返答の中で、番号を振らずに 2 つ以上の質問をしている箇所を見つけるスクリプト（`--warn --reply` が textlint の後に実行する）
 - `test/`: 気をつける語句のうち文体を指摘する行の試験（`npm run test:style`）
 - `bin/llm.mjs`、`llm/prompt.md`: ローカル LLM で読むモードと、その指示文
 - `llm.md`: ローカル LLM で読むモードの使い方と、指示の決め方の根拠
