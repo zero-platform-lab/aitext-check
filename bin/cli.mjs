@@ -4,7 +4,9 @@
 //   aitext-check [paths...]          語彙（prh 辞書）。既定の対象はリポジトリの .md すべて
 //   aitext-check --prose [paths...]  書き方（ja-technical-writing）。文書だけに適用する
 //   aitext-check --warn [paths...]   気をつける語句（warning を出すだけで、失敗扱いにしない）。
-//                                    「ではなく」が 3 回以上ある節も出す（bin/count-dewanaku.mjs）
+//                                    「ではなく」が 3 回以上ある節も出す（bin/count-dewanaku.mjs）。
+//                                    動詞を名詞として使った箇所も、形態素解析で出す（bin/find-nominal.mjs）
+//                                    責任を避ける書き方も、文の組み立てから出す（bin/find-avoidance.mjs）
 //   printf '%s' "$文" | aitext-check --prose -   標準入力から読み込む
 //   aitext-check --llm <paths...>    ローカル LLM（Ollama）で読む（bin/llm.mjs、llm.md）
 //
@@ -135,7 +137,7 @@ const plain = (l) => l.replace(/\x1b\[[0-9;]*m/g, "")
 const shown = (res.stdout ?? "").split("\n").filter((l) => !/fixable problems?\.?$|^Try to run: \$ textlint --fix/.test(plain(l).trim()))
 process.stdout.write(shown.join("\n"))
 
-// 「ではなく」の数え上げ。--format で出力の形式を変えたとき（JSON など）は、形式が混ざるので出さない
+// 「ではなく」の数え上げ、動詞を名詞として使った箇所、責任を避ける書き方。--format で出力の形式を変えたとき（JSON など）は、形式が混ざるので出さない
 if (mode === "warn" && !argv.includes("--format") && !argv.includes("-f")) {
 	let tmp = null
 	let files = targets.filter((t) => t.endsWith(".md"))
@@ -145,6 +147,8 @@ if (mode === "warn" && !argv.includes("--format") && !argv.includes("-f")) {
 		writeFileSync(files[0], stdinText)
 	}
 	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "count-dewanaku.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
+	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "find-nominal.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
+	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "find-avoidance.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
 	if (tmp) rmSync(tmp, { recursive: true, force: true })
 }
 if (tmpConfigDir) rmSync(tmpConfigDir, { recursive: true, force: true })
