@@ -1,7 +1,7 @@
 // aitext-check --llm: ローカル LLM（Ollama）に文書を読ませて、ルールでは見つけにくい問題を指摘させる。
 //
 //   aitext-check --llm [オプション] <paths...>
-//     --model <名前>   Ollama のモデル（既定: 環境変数 AITEXT_LLM_MODEL、なければ qwen3.6:35b-a3b）
+//     --model <名前>   Ollama のモデル（既定: 環境変数 AITEXT_LLM_MODEL、なければ qwen3.6:35b-a3b-q8_0。比べたときに使ったモデル）
 //     --url <URL>      Ollama の URL（既定: 環境変数 AITEXT_LLM_URL、なければ http://localhost:11434）
 //     --fast           考える過程（thinking）を使わない。速いが、外れの指摘が増える
 //     --max <件数>     1 ファイルあたりの指摘の上限（既定: 8）
@@ -22,7 +22,7 @@ const pkgRoot = path.resolve(here, "..")
 
 const argv = process.argv.slice(2)
 const opt = {
-	model: process.env.AITEXT_LLM_MODEL || "qwen3.6:35b-a3b",
+	model: process.env.AITEXT_LLM_MODEL || "qwen3.6:35b-a3b-q8_0",
 	url: (process.env.AITEXT_LLM_URL || "http://localhost:11434").replace(/\/$/, ""),
 	think: true,
 	max: 8,
