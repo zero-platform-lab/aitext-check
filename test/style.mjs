@@ -7,6 +7,7 @@
 //   nominal-hit.md / nominal-clean.md : 動詞を名詞として使った箇所（bin/find-nominal.mjs）の見落としと誤検出
 //   avoidance-hit.md / avoidance-clean.md / avoidance-list.md : 責任を避ける書き方（bin/find-avoidance.mjs）
 //   reply.md : 返答を読むモード（--reply）。「」の中に引いた語には当たらず、地の文にだけ当たること
+//   questions-hit.md / questions-clean.md : 番号を振らない質問（bin/find-questions.mjs）。hit は 1 件、clean は 0 件
 //
 // 気をつける語句には文体以外の行（「落と」「当て」など）もあるので、警告の文で文体の行だけを数える。
 // words.md の文体の表を直したら、`npm run test:style` で確かめる。
@@ -127,6 +128,16 @@ const replyWant = replyText.split("\n").flatMap((t, i) => (t.startsWith("地の�
 if (JSON.stringify(replyGot) !== JSON.stringify(replyWant)) {
 	console.log(`返答のモード  警告の行 ${JSON.stringify(replyGot)}、期待 ${JSON.stringify(replyWant)}`)
 	failed++
+}
+
+// 番号を振らずに 2 つ以上の質問をしている返答
+for (const [file, want] of [["test/questions-hit.md", 1], ["test/questions-clean.md", 0]]) {
+	const res = spawnSync(process.execPath, [path.join(ROOT, "bin", "find-questions.mjs"), path.join(ROOT, file)], { encoding: "utf8" })
+	const got = (res.stdout.match(/question-unnumbered/g) || []).length
+	if (got !== want) {
+		console.log(`質問の番号  ${file} の警告 ${got} 件、期待 ${want} 件`)
+		failed++
+	}
 }
 
 const nHit = ["style-hit", "nominal-hit", "avoidance-hit"].reduce((n, f) => n + bodyLines(`test/${f}.md`).length, 0)

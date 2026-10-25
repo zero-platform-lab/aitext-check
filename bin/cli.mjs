@@ -10,6 +10,7 @@
 //   printf '%s' "$文" | aitext-check --prose -   標準入力から読み込む
 //   aitext-check --llm <paths...>    ローカル LLM（Ollama）で読む（bin/llm.mjs、llm.md）
 //   printf '%s' "$返答" | aitext-check --warn --reply -   返答を読む。「」の中は読まない
+//                                    番号を振らずに 2 つ以上の質問をしている箇所も出す（bin/find-questions.mjs）
 //
 // **プロジェクト固有の語句は、利用側のリポジトリに置く。** 製品名の表記のように、
 // このパッケージの辞書に入れられない語句は、利用側に prh の形式で書けば同梱の辞書に
@@ -176,6 +177,8 @@ if (mode === "warn" && !argv.includes("--format") && !argv.includes("-f")) {
 	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "count-dewanaku.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
 	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "find-nominal.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
 	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "find-avoidance.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
+	// 返答を読むときだけ、番号を振らずに 2 つ以上の質問をしている箇所も出す
+	if (reply) spawnSync(process.execPath, [path.join(pkgRoot, "bin", "find-questions.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
 	if (tmp) rmSync(tmp, { recursive: true, force: true })
 }
 if (tmpConfigDir) rmSync(tmpConfigDir, { recursive: true, force: true })
