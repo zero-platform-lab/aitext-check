@@ -6,6 +6,7 @@
 //   style-sections.md : 「ではなく」の数え上げ。「3 回の節」の見出しの行にだけ警告が出ること
 //   nominal-hit.md / nominal-clean.md : 動詞を名詞として使った箇所（bin/find-nominal.mjs）の見落としと誤検出
 //   avoidance-hit.md / avoidance-clean.md / avoidance-list.md : 責任を避ける書き方（bin/find-avoidance.mjs）
+//   reply.md : 返答を読むモード（--reply）。「」の中に引いた語には当たらず、地の文にだけ当たること
 //
 // 気をつける語句には文体以外の行（「落と」「当て」など）もあるので、警告の文で文体の行だけを数える。
 // words.md の文体の表を直したら、`npm run test:style` で確かめる。
@@ -114,7 +115,21 @@ if (JSON.stringify(listGot) !== JSON.stringify(listWant)) {
 	failed++
 }
 
+// 返答を読むモード。「」の中を読まないので、警告が出るのは「地の文」の行だけ
+const replyText = readFileSync(path.join(ROOT, "test/reply.md"), "utf8")
+const replyRes = spawnSync(process.execPath, [path.join(ROOT, "bin", "cli.mjs"), "--warn", "--reply", "-", "--format", "json"], {
+	cwd: ROOT,
+	input: replyText,
+	encoding: "utf8",
+})
+const replyGot = [...new Set(JSON.parse(replyRes.stdout || "[]").flatMap((r) => r.messages.filter((m) => STYLE.test(m.message)).map((m) => m.line)))]
+const replyWant = replyText.split("\n").flatMap((t, i) => (t.startsWith("地の文") ? [i + 1] : []))
+if (JSON.stringify(replyGot) !== JSON.stringify(replyWant)) {
+	console.log(`返答のモード  警告の行 ${JSON.stringify(replyGot)}、期待 ${JSON.stringify(replyWant)}`)
+	failed++
+}
+
 const nHit = ["style-hit", "nominal-hit", "avoidance-hit"].reduce((n, f) => n + bodyLines(`test/${f}.md`).length, 0)
 const nClean = ["style-clean", "nominal-clean", "avoidance-clean"].reduce((n, f) => n + bodyLines(`test/${f}.md`).length, 0)
-console.log(`当たるべき ${nHit} 行、当たってはいけない ${nClean} 行、節の数え上げを確かめた。食い違い ${failed} 件`)
+console.log(`当たるべき ${nHit} 行、当たってはいけない ${nClean} 行、「ではなく」を節ごとに数えた結果と、返答のモードを確かめた。食い違い ${failed} 件`)
 process.exit(failed ? 1 : 0)
