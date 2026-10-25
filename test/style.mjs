@@ -67,6 +67,15 @@ if (JSON.stringify(warned) !== JSON.stringify(want)) {
 	console.log(`節の数え上げ  警告の行 ${JSON.stringify(warned)}、期待 ${JSON.stringify(want)}`)
 	failed++
 }
+// 体言止めの数え上げ。警告の行が、「3 回の節」の見出しの行だけであること
+const taigenFile = path.join(ROOT, "test/taigen-sections.md")
+const taigen = spawnSync(process.execPath, [path.join(ROOT, "bin", "count-taigen.mjs"), taigenFile], { encoding: "utf8" })
+const taigenWarned = [...taigen.stdout.matchAll(/^\s+(\d+):1\s+warning/gm)].map((m) => Number(m[1]))
+const taigenWant = [readFileSync(taigenFile, "utf8").split("\n").indexOf("## 3 回の節") + 1]
+if (JSON.stringify(taigenWarned) !== JSON.stringify(taigenWant)) {
+	console.log(`体言止めの数え上げ  警告の行 ${JSON.stringify(taigenWarned)}、期待 ${JSON.stringify(taigenWant)}`)
+	failed++
+}
 
 // 動詞を名詞として使った箇所（形態素解析）。nominal-hit.md のどの行にも当たり、nominal-clean.md のどの行にも当たらないこと
 function nominal(file) {
@@ -142,5 +151,5 @@ for (const [file, want] of [["test/questions-hit.md", 1], ["test/questions-clean
 
 const nHit = ["style-hit", "nominal-hit", "avoidance-hit"].reduce((n, f) => n + bodyLines(`test/${f}.md`).length, 0)
 const nClean = ["style-clean", "nominal-clean", "avoidance-clean"].reduce((n, f) => n + bodyLines(`test/${f}.md`).length, 0)
-console.log(`当たるべき ${nHit} 行、当たってはいけない ${nClean} 行、「ではなく」を節ごとに数えた結果と、返答のモードを確かめた。食い違い ${failed} 件`)
+console.log(`当たるべき ${nHit} 行、当たってはいけない ${nClean} 行、「ではなく」と体言止めを節ごとに数えた結果と、返答のモードを確かめた。食い違い ${failed} 件`)
 process.exit(failed ? 1 : 0)
