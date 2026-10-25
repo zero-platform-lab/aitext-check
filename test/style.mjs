@@ -5,6 +5,7 @@
 //   style-clean.md : 書き言葉だけの行。文体の警告が 1 件も出ないこと（誤検出が無いこと）
 //   style-sections.md : 「ではなく」の数え上げ。「3 回の節」の見出しの行にだけ警告が出ること
 //   nominal-hit.md / nominal-clean.md : 動詞を名詞として使った箇所（bin/find-nominal.mjs）の見落としと誤検出
+//   avoidance-hit.md / avoidance-clean.md / avoidance-list.md : 責任を避ける書き方（bin/find-avoidance.mjs）
 //
 // 気をつける語句には文体以外の行（「落と」「当て」など）もあるので、警告の文で文体の行だけを数える。
 // words.md の文体の表を直したら、`npm run test:style` で確かめる。
@@ -85,7 +86,35 @@ for (const { text, line } of bodyLines("test/nominal-clean.md")) {
 	}
 }
 
-const nHit = bodyLines("test/style-hit.md").length + bodyLines("test/nominal-hit.md").length
-const nClean = bodyLines("test/style-clean.md").length + bodyLines("test/nominal-clean.md").length
+// 責任を避ける書き方（bin/find-avoidance.mjs）。avoidance-hit.md のどの行にも当たり、avoidance-clean.md の
+// どの行にも当たらないこと。箇条書きの長さは、avoidance-list.md の 10 項目の箇条書きの先頭の行にだけ当たること
+function avoidance(file) {
+	const res = spawnSync(process.execPath, [path.join(ROOT, "bin", "find-avoidance.mjs"), path.join(ROOT, file)], { encoding: "utf8" })
+	return new Set([...res.stdout.matchAll(/^\s+(\d+):\d+\s+warning/gm)].map((m) => Number(m[1])))
+}
+const avHit = avoidance("test/avoidance-hit.md")
+for (const { text, line } of bodyLines("test/avoidance-hit.md")) {
+	if (!avHit.has(line)) {
+		console.log(`見落とし  avoidance-hit.md:${line}  ${text}`)
+		failed++
+	}
+}
+const avClean = avoidance("test/avoidance-clean.md")
+for (const { text, line } of bodyLines("test/avoidance-clean.md")) {
+	if (avClean.has(line)) {
+		console.log(`誤検出  avoidance-clean.md:${line}  ${text}`)
+		failed++
+	}
+}
+const listLines = readFileSync(path.join(ROOT, "test/avoidance-list.md"), "utf8").split("\n")
+const listWant = [listLines.indexOf("1. 一") + 1]
+const listGot = [...avoidance("test/avoidance-list.md")]
+if (JSON.stringify(listGot) !== JSON.stringify(listWant)) {
+	console.log(`箇条書きの長さ  警告の行 ${JSON.stringify(listGot)}、期待 ${JSON.stringify(listWant)}`)
+	failed++
+}
+
+const nHit = ["style-hit", "nominal-hit", "avoidance-hit"].reduce((n, f) => n + bodyLines(`test/${f}.md`).length, 0)
+const nClean = ["style-clean", "nominal-clean", "avoidance-clean"].reduce((n, f) => n + bodyLines(`test/${f}.md`).length, 0)
 console.log(`当たるべき ${nHit} 行、当たってはいけない ${nClean} 行、節の数え上げを確かめた。食い違い ${failed} 件`)
 process.exit(failed ? 1 : 0)
