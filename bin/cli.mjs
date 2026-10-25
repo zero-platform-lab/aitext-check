@@ -9,6 +9,7 @@
 //                                    責任を避ける書き方も、文の組み立てから出す（bin/find-avoidance.mjs）
 //   printf '%s' "$文" | aitext-check --prose -   標準入力から読み込む
 //   aitext-check --llm <paths...>    ローカル LLM（Ollama）で読む（bin/llm.mjs、llm.md）
+//   printf '%s' "$返答" | aitext-check --warn --reply -   返答を読む。「」の中は読まない
 //
 // **プロジェクト固有の語句は、利用側のリポジトリに置く。** 製品名の表記のように、
 // このパッケージの辞書に入れられない語句は、利用側に prh の形式で書けば同梱の辞書に
@@ -51,6 +52,13 @@ if (argv[0] === "--prose") {
 	mode = "warn"
 	argv.shift()
 }
+// 返答を読むときは、「」の中を読まない。返答では、検出する語そのもの（「未確認」）を引いて
+// 説明することが多いため。文書では「」の中にも直すべき文が入るので、--reply のときだけにする
+let reply = false
+if (mode === "warn" && argv[0] === "--reply") {
+	reply = true
+	argv.shift()
+}
 
 const CONFIG = {
 	vocab: ".textlintrc.yml",
@@ -81,6 +89,22 @@ if (localDict && existsSync(localDict)) {
 }
 const args = ["-c", configPath, "--rules-base-directory", rulesDir]
 
+// 「」の中の文字を ＿ にする。改行は残し、警告の行番号を変えない
+function maskQuotes(text) {
+	let depth = 0
+	return text.split("").map((c) => {
+		if (c === "「") {
+			depth++
+			return c
+		}
+		if (c === "」" && depth > 0) {
+			depth--
+			return c
+		}
+		return depth > 0 && c !== "\n" ? "＿" : c
+	}).join("")
+}
+
 // 気をつける語句では、textlint の後に「ではなく」を節ごとに数える。標準入力の文は 2 回読むので、
 // 一時ファイルに書いておく
 let targets = []
@@ -89,6 +113,9 @@ if (argv[0] === "-") {
 	argv.shift()
 	args.push("--stdin", "--stdin-filename", "標準入力.md")
 	if (mode === "warn") stdinText = readFileSync(0, "utf8")
+	if (reply) stdinText = maskQuotes(stdinText)
+	// 「-」の後ろのオプション（--format json など）も textlint に渡す
+	args.push(...argv)
 } else {
 	targets = argv.length ? argv : markdownFiles(userCwd)
 	if (targets.length === 0) {

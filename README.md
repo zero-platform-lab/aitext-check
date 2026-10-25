@@ -50,8 +50,11 @@ aitext-check docs README.md          # 語彙（対象を指定する）
 aitext-check --prose                 # 書き方
 aitext-check --warn                  # 気をつける語句
 printf '%s' "$文" | aitext-check --prose -   # 標準入力から読み込む
+printf '%s' "$返答" | aitext-check --warn --reply -   # AI の返答を読む。「」の中は読まない
 aitext-check --llm docs/spec.md      # ローカル LLM で読む（対象は必ず指定する）
 ```
+
+`--reply` は、AI の返答を Claude Code のフックなどで確かめるときに使います。返答では、検出する語そのもの（「未確認」）を「」で引いて説明することが多いので、「」の中を読みません。文書では「」の中にも直すべき文が入るので、文書には使いません。
 
 対象を省略すると、リポジトリの `.md` ファイルすべてをチェックします。
 
