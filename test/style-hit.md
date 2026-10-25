@@ -201,3 +201,5 @@ manifest を作りますか？
 値は `24h` と書く。
 
 YAML に書かれた値を読む。
+
+SKILL.md と TEMPLATE.md の当たりは誤検出です。
