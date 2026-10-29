@@ -6,7 +6,7 @@
 //   style-sections.md : 「ではなく」の数え上げ。「3 回の節」の見出しの行にだけ警告が出ること
 //   nominal-hit.md / nominal-clean.md : 動詞を名詞として使った箇所（bin/find-nominal.mjs）の見落としと誤検出
 //   avoidance-hit.md / avoidance-clean.md / avoidance-list.md : 責任を避ける書き方（bin/find-avoidance.mjs）
-//   colloquial-hit.md / colloquial-clean.md : 数値やデータの扱いを口語の動詞で書いた箇所（bin/find-colloquial.mjs）
+//   colloquial-hit.md / colloquial-clean.md : 取得・算出などを口語の動詞で書いた箇所（bin/find-colloquial.mjs）
 //   reply.md : 返答を読むモード（--reply）。「」の中に引いた語には当たらず、地の文にだけ当たること
 //   questions-hit.md / questions-clean.md : 番号を振らない質問（bin/find-questions.mjs）。hit は 1 件、clean は 0 件
 //
@@ -126,7 +126,7 @@ if (JSON.stringify(listGot) !== JSON.stringify(listWant)) {
 	failed++
 }
 
-// 数値やデータの扱いを口語の動詞で書いた箇所（bin/find-colloquial.mjs）。colloquial-hit.md のどの行にも当たり、
+// 取得・算出などを口語の動詞で書いた箇所（bin/find-colloquial.mjs）。colloquial-hit.md のどの行にも当たり、
 // colloquial-clean.md のどの行にも当たらないこと
 function colloquial(file) {
 	const res = spawnSync(process.execPath, [path.join(ROOT, "bin", "find-colloquial.mjs"), path.join(ROOT, file)], { encoding: "utf8" })
