@@ -6,6 +6,7 @@
 //   aitext-check --warn [paths...]   気をつける語句（warning を出すだけで、失敗扱いにしない）。
 //                                    「ではなく」が 3 回以上ある節も出す（bin/count-dewanaku.mjs）。
 //                                    体言止めの文が 3 個以上ある節も出す（bin/count-taigen.mjs）。
+//                                    7 文以上ある段落も出す（bin/count-paragraph.mjs）。
 //                                    動詞を名詞として使った箇所も、形態素解析で出す（bin/find-nominal.mjs）
 //                                    責任を避ける書き方も、文の組み立てから出す（bin/find-avoidance.mjs）
 //                                    取得・算出などを口語の動詞で書いた箇所も出す（bin/find-colloquial.mjs）
@@ -178,6 +179,7 @@ if (mode === "warn" && !argv.includes("--format") && !argv.includes("-f")) {
 	}
 	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "count-dewanaku.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
 	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "count-taigen.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
+	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "count-paragraph.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
 	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "find-nominal.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
 	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "find-avoidance.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
 	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "find-colloquial.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })

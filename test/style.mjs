@@ -7,6 +7,7 @@
 //   nominal-hit.md / nominal-clean.md : 動詞を名詞として使った箇所（bin/find-nominal.mjs）の見落としと誤検出
 //   avoidance-hit.md / avoidance-clean.md / avoidance-list.md : 責任を避ける書き方（bin/find-avoidance.mjs）
 //   colloquial-hit.md / colloquial-clean.md : 取得・算出などを口語の動詞で書いた箇所（bin/find-colloquial.mjs）
+//   paragraph-length.md : 文の数が多すぎる段落（bin/count-paragraph.mjs）。「7 文の段落」の段落の行にだけ警告が出ること
 //   reply.md : 返答を読むモード（--reply）。「」の中に引いた語には当たらず、地の文にだけ当たること
 //   questions-hit.md / questions-clean.md : 番号を振らない質問（bin/find-questions.mjs）。hit は 1 件、clean は 0 件
 //
@@ -145,6 +146,16 @@ for (const { text, line } of bodyLines("test/colloquial-clean.md")) {
 		console.log(`誤検出  colloquial-clean.md:${line}  ${text}`)
 		failed++
 	}
+}
+
+// 文の数が多すぎる段落（bin/count-paragraph.mjs）。「7 文の段落」の見出しの次の段落の行にだけ警告が出ること
+const paraLines = readFileSync(path.join(ROOT, "test/paragraph-length.md"), "utf8").split("\n")
+const paraWant = [paraLines.indexOf("## 7 文の段落") + 3]
+const paraRes = spawnSync(process.execPath, [path.join(ROOT, "bin", "count-paragraph.mjs"), path.join(ROOT, "test/paragraph-length.md")], { encoding: "utf8" })
+const paraGot = [...paraRes.stdout.matchAll(/^\s+(\d+):\d+\s+warning/gm)].map((m) => Number(m[1]))
+if (JSON.stringify(paraGot) !== JSON.stringify(paraWant)) {
+	console.log(`段落の文の数  警告の行 ${JSON.stringify(paraGot)}、期待 ${JSON.stringify(paraWant)}`)
+	failed++
 }
 
 // 返答を読むモード。「」の中を読まないので、警告が出るのは「地の文」の行だけ
