@@ -6,6 +6,7 @@
 //   style-sections.md : 「ではなく」の数え上げ。「3 回の節」の見出しの行にだけ警告が出ること
 //   nominal-hit.md / nominal-clean.md : 動詞を名詞として使った箇所（bin/find-nominal.mjs）の見落としと誤検出
 //   avoidance-hit.md / avoidance-clean.md / avoidance-list.md : 責任を避ける書き方（bin/find-avoidance.mjs）
+//   colloquial-hit.md / colloquial-clean.md : 数値やデータの扱いを口語の動詞で書いた箇所（bin/find-colloquial.mjs）
 //   reply.md : 返答を読むモード（--reply）。「」の中に引いた語には当たらず、地の文にだけ当たること
 //   questions-hit.md / questions-clean.md : 番号を振らない質問（bin/find-questions.mjs）。hit は 1 件、clean は 0 件
 //
@@ -123,6 +124,27 @@ const listGot = [...avoidance("test/avoidance-list.md")]
 if (JSON.stringify(listGot) !== JSON.stringify(listWant)) {
 	console.log(`箇条書きの長さ  警告の行 ${JSON.stringify(listGot)}、期待 ${JSON.stringify(listWant)}`)
 	failed++
+}
+
+// 数値やデータの扱いを口語の動詞で書いた箇所（bin/find-colloquial.mjs）。colloquial-hit.md のどの行にも当たり、
+// colloquial-clean.md のどの行にも当たらないこと
+function colloquial(file) {
+	const res = spawnSync(process.execPath, [path.join(ROOT, "bin", "find-colloquial.mjs"), path.join(ROOT, file)], { encoding: "utf8" })
+	return new Set([...res.stdout.matchAll(/^\s+(\d+):\d+\s+warning/gm)].map((m) => Number(m[1])))
+}
+const coHit = colloquial("test/colloquial-hit.md")
+for (const { text, line } of bodyLines("test/colloquial-hit.md")) {
+	if (!coHit.has(line)) {
+		console.log(`見落とし  colloquial-hit.md:${line}  ${text}`)
+		failed++
+	}
+}
+const coClean = colloquial("test/colloquial-clean.md")
+for (const { text, line } of bodyLines("test/colloquial-clean.md")) {
+	if (coClean.has(line)) {
+		console.log(`誤検出  colloquial-clean.md:${line}  ${text}`)
+		failed++
+	}
 }
 
 // 返答を読むモード。「」の中を読まないので、警告が出るのは「地の文」の行だけ
