@@ -8,13 +8,16 @@
 //   avoidance-hit.md / avoidance-clean.md / avoidance-list.md : 責任を避ける書き方（bin/find-avoidance.mjs）
 //   colloquial-hit.md / colloquial-clean.md : 取得・算出などを口語の動詞で書いた箇所（bin/find-colloquial.mjs）
 //   paragraph-length.md : 文の数が多すぎる段落（bin/count-paragraph.mjs）。「7 文の段落」の段落の行にだけ警告が出ること
+//   confusion-hit.md / confusion-clean.md : 英語の広い動詞を直訳した組（bin/find-confusion.mjs）。
+//     confusion-counts.tsv の件数で一時的な DB を作って確かめる。node:sqlite の無い Node では飛ばす
 //   reply.md : 返答を読むモード（--reply）。「」の中に引いた語には当たらず、地の文にだけ当たること
 //   questions-hit.md / questions-clean.md : 番号を振らない質問（bin/find-questions.mjs）。hit は 1 件、clean は 0 件
 //
 // 気をつける語句には文体以外の行（「落と」「当て」など）もあるので、警告の文で文体の行だけを数える。
 // words.md の文体の表を直したら、`npm run test:style` で確かめる。
 import { spawnSync } from "node:child_process"
-import { readFileSync } from "node:fs"
+import { mkdtempSync, readFileSync, rmSync } from "node:fs"
+import os from "node:os"
 import { fileURLToPath } from "node:url"
 import path from "node:path"
 
@@ -146,6 +149,45 @@ for (const { text, line } of bodyLines("test/colloquial-clean.md")) {
 		console.log(`誤検出  colloquial-clean.md:${line}  ${text}`)
 		failed++
 	}
+}
+
+// 英語の広い動詞を直訳した組（bin/find-confusion.mjs）。confusion-hit.md のどの行にも当たり、
+// confusion-clean.md のどの行にも当たらないこと
+const sqlite = await import("node:sqlite").catch(() => null)
+if (sqlite) {
+	const dir = mkdtempSync(path.join(os.tmpdir(), "aitext-corpus-"))
+	const dbPath = path.join(dir, "corpus.db")
+	const db = new sqlite.DatabaseSync(dbPath)
+	db.exec("CREATE TABLE pair (noun TEXT, particle TEXT, verb TEXT, n INTEGER, PRIMARY KEY (noun, particle, verb)) WITHOUT ROWID")
+	const ins = db.prepare("INSERT INTO pair VALUES (?, ?, ?, ?)")
+	for (const line of readFileSync(path.join(ROOT, "test/confusion-counts.tsv"), "utf8").split("\n")) {
+		if (line && !line.startsWith("#")) ins.run(...line.split("\t").map((c, i) => (i === 3 ? Number(c) : c)))
+	}
+	db.close()
+	const confusion = (file) => {
+		const res = spawnSync(process.execPath, [path.join(ROOT, "bin", "find-confusion.mjs"), path.join(ROOT, file)], {
+			encoding: "utf8",
+			env: { ...process.env, AITEXT_CORPUS_DB: dbPath },
+		})
+		return new Set([...res.stdout.matchAll(/^\s+(\d+):\d+\s+warning/gm)].map((m) => Number(m[1])))
+	}
+	const cfHit = confusion("test/confusion-hit.md")
+	for (const { text, line } of bodyLines("test/confusion-hit.md")) {
+		if (!cfHit.has(line)) {
+			console.log(`見落とし  confusion-hit.md:${line}  ${text}`)
+			failed++
+		}
+	}
+	const cfClean = confusion("test/confusion-clean.md")
+	for (const { text, line } of bodyLines("test/confusion-clean.md")) {
+		if (cfClean.has(line)) {
+			console.log(`誤検出  confusion-clean.md:${line}  ${text}`)
+			failed++
+		}
+	}
+	rmSync(dir, { recursive: true })
+} else {
+	console.log("node:sqlite が無いので、bin/find-confusion.mjs の試験を飛ばした（Node 22.13 以降で実行する）")
 }
 
 // 文の数が多すぎる段落（bin/count-paragraph.mjs）。「7 文の段落」の見出しの次の段落の行にだけ警告が出ること
