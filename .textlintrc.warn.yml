@@ -8,3 +8,31 @@ rules:
     severity: warning
     rulePaths:
       - ./prh-warn.yml
+
+  # **述語の後のコロン**（「webhook が以下を自動注入する:」の後にコードや箇条書きが続く形）。
+  # 英語の構文を写した形なので、「次のとおり自動注入する。」にする。名詞の後のコロン
+  # （「使い方:」）は、形態素解析で見分けて外す（textlint-rule-preset-ai-writing のルール）。
+  #
+  # **このプリセットのほかのルールは使わない。** 2026-10-25 に、手元の Markdown 302 ファイルと
+  # 過去の返答 300 件で試した結果:
+  #   no-ai-colon-continuation   文書 93 件、返答 2 件。93 件を読み、84 件が上の形だった。残りは、括弧書きで
+#                              終わる見出し語 6 件（下の allows で外す）、「ACS との棲み分け:」「または:」
+#                              「リポジトリの一番上で:」
+  #   no-ai-list-formatting      文書 116 件、返答 155 件。「- **見出し語**: 説明」の形。直された例が無い
+  #   no-ai-hype-expressions     文書 29 件、返答 5 件。ほとんどが文字どおりの「完全に一致する」
+  #                              「通信が完全に止まる」で、勧める「多くの場合」に直すと誤りになる
+  #   ai-tech-writing-guideline  文書 44 件。正規表現が粗い（1 行に「ユーザー」と「クライアント」が
+  #                              あれば、用語の混在とする）
+  #   no-ai-emphasis-patterns    文書 5 件。見出しの中の太字で、意味は変わらない
+  "@textlint-ja/preset-ai-writing":
+    no-ai-colon-continuation:
+      severity: warning
+      # 括弧書きで終わる見出し語（「グループ（`TOOL_GROUPS`）:」「出力の形式（指摘ごとに）:」）は外す。
+      # ルールはコロンの直前の 1 語だけを見るので、閉じ括弧を名詞と見なさない。
+      # 302 ファイルのうち 6 件がこの形だった
+      allows:
+        - "/[)）][:：]\\s*$/"
+    no-ai-list-formatting: false
+    no-ai-hype-expressions: false
+    no-ai-emphasis-patterns: false
+    ai-tech-writing-guideline: false
