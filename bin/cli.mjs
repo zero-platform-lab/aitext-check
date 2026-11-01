@@ -6,8 +6,11 @@
 //   aitext-check --warn [paths...]   気をつける語句（warning を出すだけで、失敗扱いにしない）。
 //                                    「ではなく」が 3 回以上ある節も出す（bin/count-dewanaku.mjs）。
 //                                    体言止めの文が 3 個以上ある節も出す（bin/count-taigen.mjs）。
+//                                    7 文以上ある段落も出す（bin/count-paragraph.mjs）。
 //                                    動詞を名詞として使った箇所も、形態素解析で出す（bin/find-nominal.mjs）
 //                                    責任を避ける書き方も、文の組み立てから出す（bin/find-avoidance.mjs）
+//                                    取得・算出などを口語の動詞で書いた箇所も出す（bin/find-colloquial.mjs）
+//                                    英語の広い動詞を直訳した箇所も、コーパスの件数で出す（bin/find-confusion.mjs、DB があるときだけ）
 //   printf '%s' "$文" | aitext-check --prose -   標準入力から読み込む
 //   aitext-check --llm <paths...>    ローカル LLM（Ollama）で読む（bin/llm.mjs、llm.md）
 //   printf '%s' "$返答" | aitext-check --warn --reply -   返答を読む。「」の中は読まない
@@ -166,7 +169,7 @@ const plain = (l) => l.replace(/\x1b\[[0-9;]*m/g, "")
 const shown = (res.stdout ?? "").split("\n").filter((l) => !/fixable problems?\.?$|^Try to run: \$ textlint --fix/.test(plain(l).trim()))
 process.stdout.write(shown.join("\n"))
 
-// 「ではなく」と体言止めの数え上げ、動詞を名詞として使った箇所、責任を避ける書き方。--format で出力の形式を変えたとき（JSON など）は、形式が混ざるので出さない
+// 「ではなく」と体言止めの数え上げ、動詞を名詞として使った箇所、責任を避ける書き方、取得・算出などを口語の動詞で書いた箇所、英語の広い動詞を直訳した箇所。--format で出力の形式を変えたとき（JSON など）は、形式が混ざるので出さない
 if (mode === "warn" && !argv.includes("--format") && !argv.includes("-f")) {
 	let tmp = null
 	let files = targets.filter((t) => t.endsWith(".md"))
@@ -177,8 +180,11 @@ if (mode === "warn" && !argv.includes("--format") && !argv.includes("-f")) {
 	}
 	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "count-dewanaku.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
 	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "count-taigen.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
+	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "count-paragraph.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
 	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "find-nominal.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
 	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "find-avoidance.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
+	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "find-colloquial.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
+	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "find-confusion.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
 	// 返答を読むときだけ、番号を振らずに 2 つ以上の質問をしている箇所も出す
 	if (reply) spawnSync(process.execPath, [path.join(pkgRoot, "bin", "find-questions.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
 	if (tmp) rmSync(tmp, { recursive: true, force: true })

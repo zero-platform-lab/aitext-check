@@ -6,18 +6,23 @@
 //   style-sections.md : 「ではなく」の数え上げ。「3 回の節」の見出しの行にだけ警告が出ること
 //   nominal-hit.md / nominal-clean.md : 動詞を名詞として使った箇所（bin/find-nominal.mjs）の見落としと誤検出
 //   avoidance-hit.md / avoidance-clean.md / avoidance-list.md : 責任を避ける書き方（bin/find-avoidance.mjs）
+//   colloquial-hit.md / colloquial-clean.md : 取得・算出などを口語の動詞で書いた箇所（bin/find-colloquial.mjs）
+//   paragraph-length.md : 文の数が多すぎる段落（bin/count-paragraph.mjs）。「7 文の段落」の段落の行にだけ警告が出ること
+//   confusion-hit.md / confusion-clean.md : 英語の広い動詞を直訳した組（bin/find-confusion.mjs）。
+//     confusion-counts.tsv の件数で一時的な DB を作って確かめる。node:sqlite の無い Node では飛ばす
 //   reply.md : 返答を読むモード（--reply）。「」の中に引いた語には当たらず、地の文にだけ当たること
 //   questions-hit.md / questions-clean.md : 番号を振らない質問（bin/find-questions.mjs）。hit は 1 件、clean は 0 件
 //
 // 気をつける語句には文体以外の行（「落と」「当て」など）もあるので、警告の文で文体の行だけを数える。
 // words.md の文体の表を直したら、`npm run test:style` で確かめる。
 import { spawnSync } from "node:child_process"
-import { readFileSync } from "node:fs"
+import { mkdtempSync, readFileSync, rmSync } from "node:fs"
+import os from "node:os"
 import { fileURLToPath } from "node:url"
 import path from "node:path"
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
-const STYLE = /口語。|動詞を名詞にした語句|冗長。|重言。|相対時制。|責任回避。|文書の「書く」。|見えない根拠。|比喩。/
+const STYLE = /口語。|動詞を名詞にした語句|冗長。|重言。|相対時制。|責任回避。|文書の「書く」。|見えない根拠。|比喩。|直訳。/
 
 // --warn を JSON 形式で実行し、文体の警告が出た行番号ごとに警告の文を返す。
 function lint(file) {
@@ -122,6 +127,76 @@ const listWant = [listLines.indexOf("1. 一") + 1]
 const listGot = [...avoidance("test/avoidance-list.md")]
 if (JSON.stringify(listGot) !== JSON.stringify(listWant)) {
 	console.log(`箇条書きの長さ  警告の行 ${JSON.stringify(listGot)}、期待 ${JSON.stringify(listWant)}`)
+	failed++
+}
+
+// 取得・算出などを口語の動詞で書いた箇所（bin/find-colloquial.mjs）。colloquial-hit.md のどの行にも当たり、
+// colloquial-clean.md のどの行にも当たらないこと
+function colloquial(file) {
+	const res = spawnSync(process.execPath, [path.join(ROOT, "bin", "find-colloquial.mjs"), path.join(ROOT, file)], { encoding: "utf8" })
+	return new Set([...res.stdout.matchAll(/^\s+(\d+):\d+\s+warning/gm)].map((m) => Number(m[1])))
+}
+const coHit = colloquial("test/colloquial-hit.md")
+for (const { text, line } of bodyLines("test/colloquial-hit.md")) {
+	if (!coHit.has(line)) {
+		console.log(`見落とし  colloquial-hit.md:${line}  ${text}`)
+		failed++
+	}
+}
+const coClean = colloquial("test/colloquial-clean.md")
+for (const { text, line } of bodyLines("test/colloquial-clean.md")) {
+	if (coClean.has(line)) {
+		console.log(`誤検出  colloquial-clean.md:${line}  ${text}`)
+		failed++
+	}
+}
+
+// 英語の広い動詞を直訳した組（bin/find-confusion.mjs）。confusion-hit.md のどの行にも当たり、
+// confusion-clean.md のどの行にも当たらないこと
+const sqlite = await import("node:sqlite").catch(() => null)
+if (sqlite) {
+	const dir = mkdtempSync(path.join(os.tmpdir(), "aitext-corpus-"))
+	const dbPath = path.join(dir, "corpus.db")
+	const db = new sqlite.DatabaseSync(dbPath)
+	db.exec("CREATE TABLE pair (noun TEXT, particle TEXT, verb TEXT, n INTEGER, PRIMARY KEY (noun, particle, verb)) WITHOUT ROWID")
+	const ins = db.prepare("INSERT INTO pair VALUES (?, ?, ?, ?)")
+	for (const line of readFileSync(path.join(ROOT, "test/confusion-counts.tsv"), "utf8").split("\n")) {
+		if (line && !line.startsWith("#")) ins.run(...line.split("\t").map((c, i) => (i === 3 ? Number(c) : c)))
+	}
+	db.close()
+	const confusion = (file) => {
+		const res = spawnSync(process.execPath, [path.join(ROOT, "bin", "find-confusion.mjs"), path.join(ROOT, file)], {
+			encoding: "utf8",
+			env: { ...process.env, AITEXT_CORPUS_DB: dbPath },
+		})
+		return new Set([...res.stdout.matchAll(/^\s+(\d+):\d+\s+warning/gm)].map((m) => Number(m[1])))
+	}
+	const cfHit = confusion("test/confusion-hit.md")
+	for (const { text, line } of bodyLines("test/confusion-hit.md")) {
+		if (!cfHit.has(line)) {
+			console.log(`見落とし  confusion-hit.md:${line}  ${text}`)
+			failed++
+		}
+	}
+	const cfClean = confusion("test/confusion-clean.md")
+	for (const { text, line } of bodyLines("test/confusion-clean.md")) {
+		if (cfClean.has(line)) {
+			console.log(`誤検出  confusion-clean.md:${line}  ${text}`)
+			failed++
+		}
+	}
+	rmSync(dir, { recursive: true })
+} else {
+	console.log("node:sqlite が無いので、bin/find-confusion.mjs の試験を飛ばした（Node 22.13 以降で実行する）")
+}
+
+// 文の数が多すぎる段落（bin/count-paragraph.mjs）。「7 文の段落」の見出しの次の段落の行にだけ警告が出ること
+const paraLines = readFileSync(path.join(ROOT, "test/paragraph-length.md"), "utf8").split("\n")
+const paraWant = [paraLines.indexOf("## 7 文の段落") + 3]
+const paraRes = spawnSync(process.execPath, [path.join(ROOT, "bin", "count-paragraph.mjs"), path.join(ROOT, "test/paragraph-length.md")], { encoding: "utf8" })
+const paraGot = [...paraRes.stdout.matchAll(/^\s+(\d+):\d+\s+warning/gm)].map((m) => Number(m[1]))
+if (JSON.stringify(paraGot) !== JSON.stringify(paraWant)) {
+	console.log(`段落の文の数  警告の行 ${JSON.stringify(paraGot)}、期待 ${JSON.stringify(paraWant)}`)
 	failed++
 }
 
