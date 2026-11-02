@@ -5,6 +5,7 @@
 //   style-clean.md : 書き言葉だけの行。文体の警告が 1 件も出ないこと（誤検出が無いこと）
 //   style-sections.md : 「ではなく」の数え上げ。「3 回の節」の見出しの行にだけ警告が出ること
 //   nominal-hit.md / nominal-clean.md : 動詞を名詞として使った箇所（bin/find-nominal.mjs）の見落としと誤検出
+//   wago-hit.md / wago-clean.md : 書き言葉にできる和語（bin/find-wago.mjs）の見落としと誤検出
 //   label-hit.md / label-clean.md : 動詞の句に名詞を付けた名札の見出し（bin/find-label.mjs）。2 行目より後の見出しと太字の行で確かめる
 //   avoidance-hit.md / avoidance-clean.md / avoidance-list.md : 責任を避ける書き方（bin/find-avoidance.mjs）
 //   colloquial-hit.md / colloquial-clean.md : 取得・算出などを口語の動詞で書いた箇所（bin/find-colloquial.mjs）
@@ -99,6 +100,26 @@ const nomClean = nominal("test/nominal-clean.md")
 for (const { text, line } of bodyLines("test/nominal-clean.md")) {
 	if (nomClean.has(line)) {
 		console.log(`誤検出  nominal-clean.md:${line}  ${text}`)
+		failed++
+	}
+}
+
+// 書き言葉にできる和語（bin/find-wago.mjs）。wago-hit.md のどの行にも当たり、wago-clean.md のどの行にも当たらないこと
+function wago(file) {
+	const res = spawnSync(process.execPath, [path.join(ROOT, "bin", "find-wago.mjs"), path.join(ROOT, file)], { encoding: "utf8" })
+	return new Set([...res.stdout.matchAll(/^\s+(\d+):\d+\s+warning/gm)].map((m) => Number(m[1])))
+}
+const wagoHit = wago("test/wago-hit.md")
+for (const { text, line } of bodyLines("test/wago-hit.md")) {
+	if (!wagoHit.has(line)) {
+		console.log(`見落とし  wago-hit.md:${line}  ${text}`)
+		failed++
+	}
+}
+const wagoClean = wago("test/wago-clean.md")
+for (const { text, line } of bodyLines("test/wago-clean.md")) {
+	if (wagoClean.has(line)) {
+		console.log(`誤検出  wago-clean.md:${line}  ${text}`)
 		failed++
 	}
 }
