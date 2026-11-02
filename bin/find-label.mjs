@@ -8,6 +8,8 @@
 //
 //   node bin/find-label.mjs <file.md>...
 //
+// 見出しの中で、数だけを書いて何が N つかを言っていない箇所（「6 つを順に決める」）も見つける。
+//
 // 見るのは、Markdown の見出しと、太字だけの段落（「**確かめた結果**」）と、行の頭の太字
 // （「- **確かめた結果**：…」）。見出しの最後の語が名詞で、次のどちらかなら当てる。
 //   - 名詞の直前が、動詞の基本形か、助動詞の基本形（「確かめる問い」「確かめた結果」）
@@ -51,24 +53,38 @@ function* labels(node, disabled = { on: false }) {
 
 const isVerbStem = (t) => t.pos === "動詞" && t.conjugated_form === "連用形"
 
+// 見出しの中で、数だけを書いて、何が N つかを言っていない箇所（「6 つを順に決める」）。
+// 「次の 3 つを守る」「障害の 3 つ」のように、直前の「の」で何の数かを言っていれば外す
+function bareCount(tokens) {
+	for (let i = 0; i + 2 < tokens.length; i++) {
+		if (tokens[i].pos_detail_1 !== "数" || tokens[i + 1].surface_form !== "つ") continue
+		const next = tokens[i + 2]
+		if (next.pos !== "助詞" || !["を", "が", "は", "に", "も"].includes(next.surface_form)) continue
+		if (tokens[i - 1] && tokens[i - 1].surface_form === "の") continue
+		return true
+	}
+	return false
+}
+
 async function judge(text) {
 	const tokens = (await tokenize(text.trim())).filter((t) => t.pos !== "記号")
+	if (bareCount(tokens)) return { word: text.trim(), kind: "count" }
 	const last = tokens[tokens.length - 1]
 	if (!last || last.pos !== "名詞" || CONDITION.has(last.surface_form) || ESTABLISHED.has(last.surface_form)) return null
 	const prev = tokens[tokens.length - 2]
 	// 「確かめる問い」「確かめた結果」
-	if (prev && ["動詞", "助動詞"].includes(prev.pos) && prev.conjugated_form === "基本形") return text.trim()
+	if (prev && ["動詞", "助動詞"].includes(prev.pos) && prev.conjugated_form === "基本形") return { word: text.trim(), kind: "label" }
 	// 「選び方」（1 語）と「終わり方」（終わり + 方）
-	if (/^[一-龠々]+[ぁ-ん]方$/.test(last.surface_form)) return text.trim()
-	if (last.surface_form === "方" && prev && isVerbStem(prev)) return text.trim()
+	if (/^[一-龠々]+[ぁ-ん]方$/.test(last.surface_form)) return { word: text.trim(), kind: "label" }
+	if (last.surface_form === "方" && prev && isVerbStem(prev)) return { word: text.trim(), kind: "label" }
 	return null
 }
 
 async function find(text) {
 	const found = []
 	for (const n of labels(parse(text))) {
-		const word = await judge(textOf(n))
-		if (word) found.push({ line: n.loc.start.line, column: n.loc.start.column + 1, word })
+		const hit = await judge(textOf(n))
+		if (hit) found.push({ line: n.loc.start.line, column: n.loc.start.column + 1, ...hit })
 	}
 	return found
 }
@@ -81,7 +97,11 @@ for (const file of process.argv.slice(2).filter((f) => f.endsWith(".md") && exis
 	const shown = path.resolve(file).startsWith(os.tmpdir()) ? path.basename(file) : file
 	console.log(`\n${shown}`)
 	for (const f of found) {
-		console.log(`  ${f.line}:${f.column}  warning  「${f.word}」: 見出しを、動詞の句に名詞を付けた名札にしていないか確認。中身を言う文にする（「書いた原稿で確かめる問い」→「書き終えたら、次の問いに答えてみる」、「障害の選び方」→「障害はジャンルに合わせて選ぶ」）  label-heading`)
+		if (f.kind === "count") {
+			console.log(`  ${f.line}:${f.column}  warning  「${f.word}」: 見出しに数だけを書いていないか確認。見出しは単独で読まれるので、何が N つかを書く（「6 つを順に決める」→「6 つのことを決めておく」）  heading-bare-count`)
+		} else {
+			console.log(`  ${f.line}:${f.column}  warning  「${f.word}」: 見出しを、動詞の句に名詞を付けた名札にしていないか確認。中身を言う文にする（「書いた原稿で確かめる問い」→「書き終えたら、次の問いに答えてみる」、「障害の選び方」→「障害はジャンルに合わせて選ぶ」）  label-heading`)
+		}
 	}
 	total += found.length
 }
