@@ -9,6 +9,7 @@
 //                                    7 文以上ある段落も出す（bin/count-paragraph.mjs）。
 //                                    動詞を名詞として使った箇所も、形態素解析で出す（bin/find-nominal.mjs）
 //                                    動詞の句に名詞を付けた名札の見出しも出す（bin/find-label.mjs）
+//                                    書き言葉の漢語にできる和語も出す（bin/find-wago.mjs）
 //                                    責任を避ける書き方も、文の組み立てから出す（bin/find-avoidance.mjs）
 //                                    取得・算出などを口語の動詞で書いた箇所も出す（bin/find-colloquial.mjs）
 //                                    英語の広い動詞を直訳した箇所も、コーパスの件数で出す（bin/find-confusion.mjs、DB があるときだけ）
@@ -184,6 +185,7 @@ if (mode === "warn" && !argv.includes("--format") && !argv.includes("-f")) {
 	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "count-paragraph.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
 	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "find-nominal.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
 	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "find-label.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
+	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "find-wago.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
 	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "find-avoidance.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
 	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "find-colloquial.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
 	spawnSync(process.execPath, [path.join(pkgRoot, "bin", "find-confusion.mjs"), ...files], { cwd: userCwd, stdio: "inherit" })
