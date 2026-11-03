@@ -9,6 +9,9 @@
 //   node bin/find-label.mjs <file.md>...
 //
 // 見出しの中で、数だけを書いて何が N つかを言っていない箇所（「6 つを順に決める」）も見つける。
+// 文書の題（# の見出し）で、動詞の連用形と読点で 2 つの作業をつないだもの（「題を変え、和語を書き換える」
+// 「整理して、索引を追加する」）も見つける。節の見出し（## 以下）と太字には当てない。作業の手順を並べていて、何のための節か（何のための変更か）を言っていないため。
+// PR の題も同じ形になりやすいので、pr-title の点検も同じ判定を使う（ユーザーが 2026-11-03 に決めた）。
 //
 // 見るのは、Markdown の見出しと、太字だけの段落（「**確かめた結果**」）と、行の頭の太字
 // （「- **確かめた結果**：…」）。見出しの最後の語が名詞で、次のどちらかなら当てる。
@@ -66,8 +69,22 @@ function bareCount(tokens) {
 	return false
 }
 
-async function judge(text) {
-	const tokens = (await tokenize(text.trim())).filter((t) => t.pos !== "記号")
+// 動詞の連用形のすぐ後に読点がある箇所（「変え、」「整理して、」）。2 つの作業を並べた見出しになる
+function twoTasks(all) {
+	for (let i = 0; i + 1 < all.length; i++) {
+		if (!isVerbStem(all[i])) continue
+		if (all[i + 1].surface_form === "、") return true
+		if (["て", "で"].includes(all[i + 1].surface_form) && all[i + 2] && all[i + 2].surface_form === "、") return true
+	}
+	return false
+}
+
+async function judge(text, depth) {
+	const all = await tokenize(text.trim())
+	// 作業を並べた形を見るのは、文書の題（# の見出し）だけ。節の見出しは「誰の目で語るかを決め、
+	// 1 つの場面の中では変えない」のような助言を 2 段で言うことが多く、作業の並びとは限らないため
+	if (depth === 1 && twoTasks(all)) return { word: text.trim(), kind: "two-tasks" }
+	const tokens = all.filter((t) => t.pos !== "記号")
 	if (bareCount(tokens)) return { word: text.trim(), kind: "count" }
 	const last = tokens[tokens.length - 1]
 	if (!last || last.pos !== "名詞" || CONDITION.has(last.surface_form) || ESTABLISHED.has(last.surface_form)) return null
@@ -83,7 +100,7 @@ async function judge(text) {
 async function find(text) {
 	const found = []
 	for (const n of labels(parse(text))) {
-		const hit = await judge(textOf(n))
+		const hit = await judge(textOf(n), n.type === "Header" ? n.depth : 0)
 		if (hit) found.push({ line: n.loc.start.line, column: n.loc.start.column + 1, ...hit })
 	}
 	return found
@@ -97,7 +114,9 @@ for (const file of process.argv.slice(2).filter((f) => f.endsWith(".md") && exis
 	const shown = path.resolve(file).startsWith(os.tmpdir()) ? path.basename(file) : file
 	console.log(`\n${shown}`)
 	for (const f of found) {
-		if (f.kind === "count") {
+		if (f.kind === "two-tasks") {
+			console.log(`  ${f.line}:${f.column}  warning  「${f.word}」: 見出しで、2 つの作業を「〜し、」「〜して、」でつないでいないか確認。作業を並べず、何のための節かを一言で書く（「題を変え、和語を書き換える」→「チェックで見つけた不自然な日本語を修正する」）  heading-two-tasks`)
+		} else if (f.kind === "count") {
 			console.log(`  ${f.line}:${f.column}  warning  「${f.word}」: 見出しに数だけを書いていないか確認。見出しは単独で読まれるので、何が N つかを書く（「6 つを順に決める」→「6 つのことを決めておく」）  heading-bare-count`)
 		} else {
 			console.log(`  ${f.line}:${f.column}  warning  「${f.word}」: 見出しを、動詞の句に名詞を付けた名札にしていないか確認。中身を言う文にする（「書いた原稿で確かめる問い」→「書き終えたら、次の問いに答えてみる」、「障害の選び方」→「障害はジャンルに合わせて選ぶ」）  label-heading`)
