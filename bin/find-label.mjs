@@ -9,8 +9,8 @@
 //   node bin/find-label.mjs <file.md>...
 //
 // 見出しの中で、数だけを書いて何が N つかを言っていない箇所（「6 つを順に決める」）も見つける。
-// 動詞の連用形と読点で 2 つの作業をつないだ見出し（「題を変え、和語を書き換える」「整理して、索引を
-// 追加する」）も見つける。作業の手順を並べていて、何のための節か（何のための変更か）を言っていないため。
+// 文書の題（# の見出し）で、動詞の連用形と読点で 2 つの作業をつないだもの（「題を変え、和語を書き換える」
+// 「整理して、索引を追加する」）も見つける。節の見出し（## 以下）と太字には当てない。作業の手順を並べていて、何のための節か（何のための変更か）を言っていないため。
 // PR の題も同じ形になりやすいので、pr-title の点検も同じ判定を使う（ユーザーが 2026-11-03 に決めた）。
 //
 // 見るのは、Markdown の見出しと、太字だけの段落（「**確かめた結果**」）と、行の頭の太字
@@ -79,9 +79,11 @@ function twoTasks(all) {
 	return false
 }
 
-async function judge(text) {
+async function judge(text, depth) {
 	const all = await tokenize(text.trim())
-	if (twoTasks(all)) return { word: text.trim(), kind: "two-tasks" }
+	// 作業を並べた形を見るのは、文書の題（# の見出し）だけ。節の見出しは「誰の目で語るかを決め、
+	// 1 つの場面の中では変えない」のような助言を 2 段で言うことが多く、作業の並びとは限らないため
+	if (depth === 1 && twoTasks(all)) return { word: text.trim(), kind: "two-tasks" }
 	const tokens = all.filter((t) => t.pos !== "記号")
 	if (bareCount(tokens)) return { word: text.trim(), kind: "count" }
 	const last = tokens[tokens.length - 1]
@@ -98,7 +100,7 @@ async function judge(text) {
 async function find(text) {
 	const found = []
 	for (const n of labels(parse(text))) {
-		const hit = await judge(textOf(n))
+		const hit = await judge(textOf(n), n.type === "Header" ? n.depth : 0)
 		if (hit) found.push({ line: n.loc.start.line, column: n.loc.start.column + 1, ...hit })
 	}
 	return found
